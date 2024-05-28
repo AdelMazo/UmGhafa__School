@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students</title>
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        select, input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        select:focus,
+        input[type="date"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        button[type="submit"],
+        #save_results_button,
+        .student-actions button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px; /* Adjusted padding */
+            border: none;
+            border-radius: 5px; /* Adjusted border radius */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            outline: none;
+            margin-right: 10px; /* Added margin */
+        }
+
+        button[type="submit"]:hover,
+        #save_results_button:hover,
+        .student-actions button:hover {
+            background-color: #0056b3;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .student-table th,
+        .student-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .student-table th {
+            background-color: #f2f2f2;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Students</h2>
+        <form id="manage_students_form">
+            <div class="form-group">
+                <label for="class">Select Class:</label>
+                <select id="class" name="class" required>
+                    <option value="">Select Class</option>
+                    {% for class_info in class_data %}
+                        <option value="{{ class_info[0] }}">{{ class_info[1] }} - Section {{ class_info[4] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="update_form_container"></div>
+            <button type="submit">Show Students</button>
+        </form>
+        <table class="student-table" id="student_table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Student Number</th>
+                    <th>Emirates ID</th>                   
+                    <th>Gender</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="student_list">
+                <!-- Student items will be added dynamically here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#manage_students_form').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+    
+                var classId = $('#class').val();
+    
+                // Fetch students for the selected class
+                $.ajax({
+                    url: '/get_students',
+                    method: 'POST',
+                    data: { class_id: classId },
+                    success: function(response) {
+                        $('#student_list').empty(); // Clear previous student list
+    
+                        // Populate the student list
+                        response.forEach(function(student) {
+                            var studentRow = '<tr>';
+                            studentRow += '<td>' + student.full_name + '</td>';
+                            studentRow += '<td>' + student.student_number + '</td>';
+                            studentRow += '<td>' + student.emirates_id + '</td>';
+                            
+                            studentRow += '<td>' + student.gender + '</td>';
+                            studentRow += '<td><button onclick="updateStudent(' + student.id + ')">Update</button>'; // Include class_id
+                            studentRow += '<button onclick="deleteStudent(' + student.id + ')">Delete</button></td>';
+                            studentRow += '</tr>';
+    
+                            $('#student_list').append(studentRow);
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    
+        // Function to update student
+        function updateStudent(studentId) {
+            console.log('Updating student:', studentId);
+            // Load update student form dynamically based on selected student
+            $.ajax({
+                url: `/update_student/${studentId}`,
+                method: 'GET',
+                data: { 
+                    // Include other form data here if necessary
+                },
+                success: function(response) {
+                    console.log('Update form loaded successfully');
+                    $('#update_form_container').html(response.html);
+                    $('#update_form_container').show(); // Show the update form container
+                    // Clear the update form after successful update
+                    $('#update_form_container form')[0].reset();
+                },    
+                error: function(xhr, status, error) {
+                    // Handle error if needed
+                    console.error(error);
+                }
+            }); 
+        }
+    
+        function deleteStudent(studentId) {
+            console.log('Deleting student:', studentId);
+            // Confirm deletion before proceeding
+            if (confirm('Are you sure you want to delete this student?')) {
+                // Perform AJAX request to delete the student
+                $.ajax({
+                    url: '/delete_student/' + studentId,  // Pass student ID in the URL
+                    method: 'POST',
+                    success: function(response) {
+                        console.log('Student deleted successfully');
+                        // Reload the student list after deletion
+                        $('#manage_students_form').submit();
+                        // Remove the update form after successful deletion
+                        $('#update_form_container').empty();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+        }
+    </script>
+    
+    
+    
+</body>
+</html>

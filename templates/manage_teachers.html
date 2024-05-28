@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Manage Teachers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        /* Customize title color */
+        h1 {
+            text-align: center;
+            background: linear-gradient(45deg, #4CAF50, #FF9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+        }
+
+        /* Container for the table to enable horizontal scrolling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 1500px; /* Set table width */
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        /* Customize table header colors */
+        th {
+            background: linear-gradient(45deg, #673AB7, #009688); /* Gradient color for headers */
+            color: #ffffff; /* White text color */
+        }
+
+        button {
+            padding: 8px 12px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            padding: 8px 12px;
+            color: white;
+            background-color: #28a745; /* Adjust color as desired */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button.update {
+            background-color: #007bff;
+        }
+
+        button.delete {
+            background-color: #dc3545;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+        }
+
+        form.update-form, form.delete-form {
+            display: inline;
+        }
+
+        /* Update form container */
+        #updateFormContainer {
+            display: none;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Update form styling */
+        form#updateForm {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        form#updateForm label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        form#updateForm input[type="text"], form#updateForm input[type="date"], form#updateForm input[type="email"], form#updateForm input[type="password"], form#updateForm input[type="group"], form#updateForm input[type="checkbox"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form#updateForm button {
+            grid-column: span 2;
+            background-color: #28a745; /* Green color for the update button */
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            form#updateForm {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Pop-up overlay and content styling */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        .popup-content {
+            text-align: center;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #007bff; /* Blue color */
+            margin-bottom: 20px;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555; /* Darker text color */
+        }
+
+        .popup button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            outline: none; /* Remove default focus outline */
+        }
+
+        .popup button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #555;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Style for the search input field */
+        #searchInput {
+            width: 25%; /* Make the input field take up the full width of its container */
+            padding: 10px 20px; /* Add padding for spacing */
+            border-radius: 25px; /* Rounded corners */
+            border: 1px solid #ccc; /* Border color */
+            outline: none; /* Remove default focus outline */
+            background-color: #f9f9f9; /* Light background color */
+            transition: border-color 0.3s ease; /* Smooth transition for focus effect */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            font-size: 16px; /* Adjust font size for better readability */
+            color: #333; /* Text color */
+        }
+
+        /* Placeholder style */
+        #searchInput::placeholder {
+            color: #888; /* Placeholder text color */
+        }
+
+        /* Focus effect */
+        #searchInput:focus {
+            border-color: #007bff; /* Change border color on focus */
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Add glow effect on focus */
+        }
+
+        /* Add a search icon inside the input field */
+        #searchInput {
+            background-image: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff');
+            background-repeat: no-repeat;
+            background-position: 10px center; /* Adjust the position of the icon */
+            padding-left: 40px; /* Add padding to the left to accommodate the icon */
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to show the update form
+            window.showUpdateForm = function(button) {
+                // Retrieve data attributes from the button
+                const teacherId = button.getAttribute('data-id');
+                const employeeName = button.getAttribute('data-name');
+                const dob = button.getAttribute('data-dob');
+                const gender = button.getAttribute('data-gender');
+                const jobId = button.getAttribute('data-jobid');
+                const email = button.getAttribute('data-email');
+                const mission = button.getAttribute('data-mission');
+                const subject = button.getAttribute('data-subject');
+                const phone = button.getAttribute('data-phone');
+                const coordinator = button.getAttribute('data-coordinator') === 'true';
+                const classes = button.getAttribute('data-classes');
+                const password = button.getAttribute('data-password');
+                const group = button.getAttribute('data-group');
+
+                // Populate the update form
+                $('#updateTeacherId').val(teacherId);
+                $('#updateEmployeeName').val(employeeName);
+                $('#updateDob').val(dob);
+                $('#updateGender').val(gender);
+                $('#updateJobId').val(jobId);
+                $('#updateEmail').val(email);
+                $('#updateMission').val(mission);
+                $('#updateSubject').val(subject);
+                $('#updatePhone').val(phone);
+                $('#updateCoordinator').prop('checked', coordinator);
+                $('#updateClasses').val(classes);
+                $('#updatePassword').val(password);
+                $('#updateGroup').val(group);
+
+                // Show the update form container
+                $('#updateFormContainer').show();
+            };
+
+            // Function to filter the table based on search input
+            window.filterTable = function() {
+                const searchInput = $('#searchInput').val().toLowerCase();
+                const rows = $('#teacherTable tr').slice(1); // Skip the header row
+
+                rows.each(function() {
+                    const cells = $(this).find('td');
+                    let match = false;
+
+                    cells.each(function() {
+                        const cellText = $(this).text().toLowerCase();
+                        if (cellText.includes(searchInput)) {
+                            match = true;
+                            return false; // Break the loop
+                        }
+                    });
+
+                    $(this).toggle(match);
+                });
+            };
+
+            // Function to submit the update form via AJAX
+            function submitUpdateForm(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const form = $('#updateForm');
+                const formData = form.serialize();
+
+                // Perform AJAX request using jQuery
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    dataType: 'json', // Expect JSON response
+                    success: function(data) {
+                        if (data.status === 'success') {
+                            // Hide the update form container
+                            $('#updateFormContainer').hide();
+
+                            // Show success popup
+                            $('#overlay, #success_popup').show();
+
+                            // Here, instead of reloading the page, update the teachers table dynamically
+                            // Fetch the updated list of teachers from the server (via AJAX) and update the table content
+                            refreshTeachersTable();
+
+                            // Set a timeout to hide the popup after a few seconds (e.g. 3 seconds)
+                            setTimeout(() => {
+                                hidePopup();
+                            }, 3000);
+
+                        } else {
+                            alert('Failed to update teacher data: ' + data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating teacher data.');
+                    }
+                });
+            }
+
+            function refreshTeachersTable() {
+                // Perform AJAX request to fetch the updated list of teachers
+                $.ajax({
+                    url: '/manage_teachers', // URL to fetch the data
+                    method: 'GET',
+                    dataType: 'json', // Expect JSON response
+                    success: function(data) {
+                        // Clear the existing table body
+                        const tableBody = $('#teacherTable tbody');
+                        tableBody.empty();
+
+                        // Populate the table with the new data
+                        if (data && Array.isArray(data.teachers) && data.teachers.length > 0) {
+                            data.teachers.forEach((teacher) => {
+                                const row = $('<tr>');
+
+                                // Create table cells with teacher data
+                                row.append(`<td>${teacher.id}</td>`);
+                                row.append(`<td>${teacher.employee_name}</td>`);
+                                row.append(`<td>${teacher.dob}</td>`);
+                                row.append(`<td>${teacher.gender}</td>`);
+                                row.append(`<td>${teacher.job_id}</td>`);
+                                row.append(`<td>${teacher.email}</td>`);
+                                row.append(`<td>${teacher.mission}</td>`);
+                                row.append(`<td>${teacher.subject}</td>`);
+                                row.append(`<td>${teacher.phone}</td>`);
+                                row.append(`<td>${teacher.coordinator ? 'Yes' : 'No'}</td>`);
+                                row.append(`<td>${teacher.classes}</td>`);
+                                row.append(`<td>${teacher.password}</td>`);
+                                row.append(`<td>${teacher.group}</td>`);
+                                
+                                // Create the action buttons for the row
+                                const actionButtons = $('<td class="action-buttons">');
+                                const updateButton = $('<button class="update" data-id="' + teacher.id + '" data-name="' + teacher.employee_name + '" data-dob="' + teacher.dob + '" data-gender="' + teacher.gender + '" data-jobid="' + teacher.job_id + '" data-email="' + teacher.email + '" data-mission="' + teacher.mission + '" data-subject="' + teacher.subject + '" data-phone="' + teacher.phone + '" data-coordinator="' + teacher.coordinator + '" data-classes="' + teacher.classes + '" data-password="' + teacher.password + '" data-group="' + teacher.group + '" onclick="showUpdateForm(this)">Update</button>');
+                                const deleteButton = $('<button class="delete" onclick="deleteTeacher(' + teacher.id + ')">Delete</button>');
+
+                                actionButtons.append(updateButton);
+                                actionButtons.append(deleteButton);
+                                row.append(actionButtons);
+
+                                // Append the row to the table body
+                                tableBody.append(row);
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error occurred while refreshing teachers table:', error);
+                    }
+                });
+            }
+            // Attach event handlers
+            $('#updateForm').on('submit', submitUpdateForm);
+
+
+            // Attach showUpdateForm function to buttons dynamically added to the DOM
+            $(document).on('click', '.showUpdateFormButton', function() {
+                showUpdateForm(this);
+            });
+
+            // Attach filterTable function to the search input keyup event
+            $('#searchInput').on('keyup', filterTable);
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Manage Teachers</h1>
+    <div id="overlay" class="overlay" onclick="hidePopup()"></div>
+    <div id="success_popup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="hidePopup()">&times;</span>
+            <h2>Success!</h2>
+            <p>Teacher information has been updated successfully.</p>
+            <button onclick="hidePopup()">Close</button>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search for teachers...">
+
+    <!-- Teachers table -->
+    <div class="table-container">
+        <table id="teacherTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Date of Birth</th>
+                    <th>Gender</th>
+                    <th>Job ID</th>
+                    <th>Email</th>
+                    <th>Mission</th>
+                    <th>Subject</th>
+                    <th>Phone Number</th>
+                    <th>Coordinator</th>
+                    <th>Classes</th>
+                    <th>Password</th>
+                    <th>Group Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loop through teachers to display rows -->
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher[0] }}</td>
+                    <td>{{ teacher[1] }}</td>
+                    <td>{{ teacher[2] }}</td>
+                    <td>{{ teacher[3] }}</td>
+                    <td>{{ teacher[4] }}</td>
+                    <td>{{ teacher[5] }}</td>
+                    <td>{{ teacher[6] }}</td>
+                    <td>{{ teacher[7] }}</td>
+                    <td>{{ teacher[8] }}</td>
+                    <td>{{ teacher[9] }}</td>
+                    <td>{{ teacher[10] }}</td>
+                    <td>{{ teacher[11] }}</td>
+                    <td>{{ teacher[12] }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Update button -->
+
+                            <button class="update" data-id="{{ teacher[0] }}"
+                                data-name="{{ teacher[1] }}"
+                                data-dob="{{ teacher[2] }}"
+                                data-gender="{{ teacher[3] }}"
+                                data-jobid="{{ teacher[4] }}"
+                                data-email="{{ teacher[5] }}"
+                                data-mission="{{ teacher[6] }}"
+                                data-subject="{{ teacher[7] }}"
+                                data-phone="{{ teacher[8] }}"
+                                data-coordinator="{{ 'true' if teacher[9] else 'false' }}"
+                                data-classes="{{ teacher[10] }}"
+                                data-password="{{ teacher[11] }}"
+                                data-group="{{ teacher[12] }}"
+                                onclick="showUpdateForm(this)">Update</button>
+
+                            <!-- Delete button -->
+                            <form class="delete-form" action="/manage_teachers" method="POST" onsubmit="return confirmDelete();">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="teacher_id" value="{{ teacher[0] }}">
+                                <button class="delete" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Update form container -->
+    <div id="updateFormContainer">
+        <h2>Update Teacher</h2>
+        <form method="POST" action="/manage_teachers" id="updateForm">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="teacher_id" id="updateTeacherId">
+
+            <!-- Update form fields -->
+            <label for="updateEmployeeName">Name:</label>
+            <input type="text" id="updateEmployeeName" name="employee_name" required>
+
+            <label for="updateDob">Date of Birth:</label>
+            <input type="date" id="updateDob" name="date_of_birth" required>
+
+            <label for="updateGender">Gender:</label>
+            <input type="text" id="updateGender" name="gender" required>
+
+            <label for="updateJobId">Job ID:</label>
+            <input type="text" id="updateJobId" name="job_id" required>
+
+            <label for="updateEmail">Email:</label>
+            <input type="email" id="updateEmail" name="email" required>
+
+            <label for="updateMission">Mission:</label>
+            <input type="text" id="updateMission" name="mission" required>
+
+            <label for="updateSubject">Subject:</label>
+            <input type="text" id="updateSubject" name="subject" required>
+
+            <label for="updatePhone">Phone Number:</label>
+            <input type="text" id="updatePhone" name="phone_number" required>
+
+            <label for="updateCoordinator">Coordinator:</label>
+            <input type="checkbox" id="updateCoordinator" name="coordinator">
+
+            <label for="updateClasses">Classes:</label>
+            <input type="text" id="updateClasses" name="teacher_classes" required>
+
+            <label for="updatePassword">Password:</label>
+            <input type="password" id="updatePassword" name="password" required>
+            
+            <label for="updateGroup">Group Number:</label>
+            <input type="text" id="updateGroup" name="group_number" required>
+
+            <button type="submit">Update Teacher</button>  
+        </form>
+    </div>
+
+</body>
+
+</html>

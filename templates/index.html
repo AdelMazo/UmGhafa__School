@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management Software</title>
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+</head>
+<body>
+    <div class="mcd-menu">
+        <div class="sidebar-header">
+            <h2></h2>
+        </div>
+        <ul class="clearfix menu">
+            <!-- Menu items with data-url attribute -->
+            <!-- Update data-url values to match your Flask routes -->
+            <li><a href="#" class="menu-item" data-url="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li>
+                <a href="#" class="menu-item"><i class="fas fa-user-graduate"></i> Reports Generation</a>
+                <ul class="submenu">
+                    <li>
+                        <span class="submenu-heading">Attendance Reports:</span>
+                        <ul>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('daily_attendance_report') }}">Daily Attendance Report</a>: This report shows the attendance of students for a particular day.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('monthly_attendance_report') }}">Monthly Attendance Report</a>: Summarizes the attendance of each student for an entire month.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('classwise_attendance_report') }}">Class-wise Attendance Report</a>: Shows the attendance percentage of each class for a specified period.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('absentee_report') }}">Absentee Report</a>: Lists students who were absent on a specific day or over a period.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="submenu-heading">Results Reports:</span>
+                        <ul>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('student_report_card') }}">Students Report </a>: Includes the assessment results and behavior notes for each student.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('classwise_result_summary') }}">Class-wise Result Summary</a>: Summarizes the performance of each class in various subjects.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('subjectwise_performance_report') }}">Subject-wise Performance Report</a>: Analyzes the performance of students in each subject.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('comparative_analysis_report') }}">Comparative Analysis Report</a>: Compares the performance of different classes or sections.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('progress_report') }}">Progress Report</a>: Tracks the progress of students over multiple assessments or terms.</li>
+                            
+                            
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="submenu-heading">General Reports:</span>
+                        <ul>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('event_calendar') }}">Event Calendar</a>: Lists upcoming events, including descriptions and dates.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('student_directory') }}">Student Directory</a>: A comprehensive list of all students enrolled in the school.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('class_roster') }}">Class Roster</a>: Lists of students enrolled in each class.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('teacher_assignment_report') }}">Teacher Assignment Report</a>: Shows which teachers are assigned to each class or subject.</li>
+                            <li><a href="#" class="submenu-link" data-url="{{ url_for('behavioral_analysis_report') }}">Behavioral Analysis Report</a>: Summarizes behavior notes and patterns for individual students.</li>
+                        </ul>
+                    </li>
+                </ul>
+            <li>
+                <a href="#" class="menu-item"><i class="fas fa-user-friends"></i> Administration</a>
+                <ul class="submenu">
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('morning_duty_scheduling') }}">Morning Duty Scheduling</a></li>
+                    
+                </ul>
+            <li>             
+                <a href="#" class="menu-item"><i class="fas fa-user-friends"></i> Class</a>
+                <ul class="submenu">
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('create_class') }}">Create Class</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_classes') }}">Manage Classes</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('add_students') }}">Add Students</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_students') }}">Manage Students</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('add_teachers') }}">Add Teachers</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_teachers') }}">Manage Teachers</a></li>
+                    
+                </ul>
+                
+                    <li><a href="#" class="menu-item" data-url="{{ url_for('events') }}"><i class="fas fa-tachometer-alt"></i> Events</a></li>  
+
+            </li>
+
+            <li>
+                <a href="#" class="menu-item"><i class="fas fa-user-graduate"></i> Students</a>
+                <ul class="submenu">
+                    
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('attendance') }}">Attendance</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_attendance') }}">Manage Attendance</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('results') }}">Results</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_results') }}">Manage Results</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('booking_exam') }}">Booking Exam</a></li>
+                </ul>
+            </li>
+                        
+                </ul>
+            <li>
+
+                <a href="{{ url_for('logout') }}">Logout</a></li> <!-- Add logout link/button -->
+        </ul>
+    </div>
+    <div class="content">
+        <!-- Main content here -->
+        <!-- The initial content will be loaded dynamically -->
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to load dashboard content initially
+            function loadDashboard() {
+                var url = "{{ url_for('dashboard') }}";
+                $('.content').load(url, function() {
+                    // Update dashboard data after loading
+                    updateDashboard();
+                });
+            }
+
+            // Function to update dashboard data
+            function updateDashboard() {
+                fetch('/dashboard_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update dashboard data
+                        // Update total students and total classes
+                        $('#totalStudents').text(data.total_students);
+                        $('#totalClasses').text(data.total_classes);
+                        document.getElementById('dailyPresence').textContent = data.daily_presence_percentage;
+                        document.getElementById('dailyAbsence').textContent = data.daily_absence_percentage;
+                        // Update morning delay card
+                        document.getElementById('morningDelay').textContent = data.morning_delay_percentage_first_3_periods;
+                        // Event listener for Explore Results button
+                        
+                        document.getElementById('exploreResultsButton').addEventListener('click', function() {
+                            console.log("Explore Results button clicked"); // Debug statement
+                            exploreResults();
+                        });
+
+                        // Event listener for Hide Results button
+                        document.getElementById('hideResultsButton').addEventListener('click', function() {
+                            console.log("Hide Results button clicked"); // Debug statement
+                            hideResults();
+                        });
+                        // Update academic year
+                        var currentDate = new Date();
+                        var currentMonth = currentDate.getMonth() + 1; // Adding 1 to get the month from 1 to 12
+                        var currentYear = currentDate.getFullYear();
+                        var nextYear = currentYear + 1;
+                        var academicYear;
+                        if (currentMonth >= 8) { // If current month is August (8) or later
+                            academicYear = currentYear + '/' + nextYear;
+                        } else { // If current month is earlier than August
+                            academicYear = (currentYear - 1) + '/' + currentYear;
+                        }
+                        document.getElementById('academicYear').textContent = academicYear;
+                    })
+                    .catch(error => console.error('Error fetching dashboard data:', error));
+            }
+            
+            // Toggle submenu when menu item is clicked
+            $('.menu-item').click(function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var url = $(this).data('url');
+                $('.content').load(url, function() {
+                    // Update dashboard data after loading
+                    if (url === "{{ url_for('dashboard') }}") {
+                        updateDashboard();
+                    }
+                });
+            });
+
+            // Load submenu content dynamically into the main content area
+            $('.submenu-link').click(function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var url = $(this).data('url');
+                $('.content').load(url);
+            });
+
+            // Load dashboard initially
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>

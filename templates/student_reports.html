@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        /* Styles for the dashboard */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Dashboard - Academic Year: <span id="academicYear"></span></h1>
+
+        <div class="section">
+            <h2>Results</h2>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Exam/Assessment Name</th>
+                        <th>Obtained Marks</th>
+                        <th>Date of Assessment</th>
+                        <th>Behaviour Notes</th>
+                        <th>Other Notes</th>
+                        <th>Download PDF</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                    <!-- Data will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Attendance</h2>
+            <p>Term: <span id="term"></span></p>
+            <p>Total Days Attended: <span id="daysAttended"></span></p>
+            <p>Total Days Absent: <span id="daysAbsent"></span></p>
+            <p>Attendance Percentage: <span id="attendancePercentage"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function fetchAttendanceDetails(emiratesId) {
+            console.log('Fetching attendance details for Emirates ID:', emiratesId);
+            fetch(`/get_attendance_details/${emiratesId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Attendance details fetched from backend:', data);
+                    populateAttendanceDetails(data);
+                })
+                .catch(error => console.error('Error fetching attendance details:', error));
+        }
+
+        // Function to populate attendance details on the dashboard
+        function populateAttendanceDetails(attendanceDetails) {
+            const termSpan = document.getElementById('term');
+            const daysAttendedSpan = document.getElementById('daysAttended');
+            const daysAbsentSpan = document.getElementById('daysAbsent');
+            const attendancePercentageSpan = document.getElementById('attendancePercentage');
+
+            termSpan.textContent = attendanceDetails.term;
+            daysAttendedSpan.textContent = attendanceDetails.total_days_attended;
+            daysAbsentSpan.textContent = attendanceDetails.total_days_absent;
+            attendancePercentageSpan.textContent = attendanceDetails.attendance_percentage + '%';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the student/parent is logged in
+            const isLoggedIn = true; // Set this flag based on your Flask session
+            if (isLoggedIn) {
+                const emiratesId = '{{ session["emirates_id"] }}'; // Fetch Emirates ID from session
+                console.log('Emirates ID from session:', emiratesId); // Log the Emirates ID
+                if (emiratesId) {
+                    fetchAttendanceDetails(emiratesId); // Fetch attendance details
+                } else {
+                    console.error('Emirates ID not found in session');
+                }
+            }
+        });
+        // Function to fetch the logged-in student's Emirates ID from the Flask backend
+        function fetchLoggedInStudentId() {
+            console.log('Fetching logged-in student ID...');
+            fetch('/get_logged_in_student_id')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const emiratesId = data.emirates_id;
+                    console.log('Emirates ID:', emiratesId);
+                    fetchResultsData(emiratesId); // Fetch results using the obtained Emirates ID
+                })
+                .catch(error => console.error('Error fetching student ID:', error));
+        }
+
+        // Function to fetch results data from the Flask backend after obtaining the Emirates ID
+        function fetchResultsData(emiratesId) {
+            console.log('Fetching results data for Emirates ID:', emiratesId);
+            fetch(`/get_results_data/${emiratesId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Results data fetched from backend:', data);
+                    populateResultsTable(data);
+                })
+                .catch(error => console.error('Error fetching results data:', error));
+        }
+
+        // Function to populate the results table
+        function populateResultsTable(results) {
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = ''; // Clear existing data
+            results.forEach(result => {
+                const row = document.createElement('tr');
+                // Parse the date string
+                const assessmentDate = new Date(result[3]);
+                // Format the date as desired
+                const formattedDate = assessmentDate.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                row.innerHTML = `
+                    <td>${result[0]}</td> <!-- Subject Name -->
+                    <td>${result[1]}</td> <!-- Exam/Assessment Name -->
+                    <td>${result[2]}</td> <!-- Obtained Marks -->
+                    <td>${formattedDate}</td> <!-- Date of Assessment (formatted) -->
+                    <td>${result[4]}</td> <!-- Behavior Notes -->
+                    <td>${result[5]}</td> <!-- Other Notes -->
+                    <td><a href="#">Download</a></td>
+                `;
+                resultsBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the student/parent is logged in
+            const isLoggedIn = true; // Set this flag based on your Flask session
+            if (isLoggedIn) {
+                const emiratesId = '{{ session["emirates_id"] }}'; // Fetch Emirates ID from session
+                console.log('Emirates ID from session:', emiratesId); // Log the Emirates ID
+                if (emiratesId) {
+                    fetchResultsData(emiratesId); // Fetch results using the obtained Emirates ID
+                } else {
+                    console.error('Emirates ID not found in session');
+                }
+            }
+            displayAcademicInfo();
+        });
+        // Function to display the current academic year and term
+        function displayAcademicInfo() {
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth(); // 0-indexed month
+            const currentYear = currentDate.getFullYear();
+    
+            let academicYear;
+            let term;
+    
+            if (currentMonth >= 7) { // Academic year starts in August
+                academicYear = currentYear + '/' + (currentYear + 1);
+            } else {
+                academicYear = (currentYear - 1) + '/' + currentYear;
+            }
+    
+            if (currentMonth >= 7 && currentMonth <= 11) { // Term 1: August to December
+                term = 'Term 1';
+            } else if (currentMonth >= 0 && currentMonth <= 2) { // Term 2: January to March
+                term = 'Term 2';
+            } else { // Term 3: April to July
+                term = 'Term 3';
+            }
+    
+            document.title = 'Student Dashboard - ' + academicYear;
+            document.querySelector('h1').innerText = 'Student Dashboard - ' + academicYear;
+            document.querySelector('h2').innerText = 'Results - ' + term;
+        }
+    </script>
+    
+</body>
+</html>

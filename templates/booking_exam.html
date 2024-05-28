@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Exam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Booking Exam</h1>
+        <form id="bookingForm">
+            <div class="mb-3">
+                <label for="teacherSelect" class="form-label">Select Teacher</label>
+                <select id="teacherSelect" class="form-select" required>
+                    <!-- Populate this select with teachers from the database -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="classSelect" class="form-label">Select Class</label>
+                <select id="classSelect" class="form-select" required>
+                    <!-- Populate this select with classes from the database -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="examDate" class="form-label">Exam Date</label>
+                <input type="date" id="examDate" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="examType" class="form-label">Exam Type</label>
+                <input type="text" id="examType" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="subject" class="form-label">Subject</label>
+                <input type="text" id="subject" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Book Exam Day</button>
+        </form>
+        <div id="responseMessage"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Load teachers and classes from the database when the page loads
+            loadTeachersAndClasses();
+
+            // Handle form submission
+            $('#bookingForm').submit(function(event) {
+                event.preventDefault();
+
+                const formData = {
+                    teacher_id: $('#teacherSelect').val(),
+                    class_id: $('#classSelect').val(),
+                    exam_date: $('#examDate').val(),
+                    exam_type: $('#examType').val(),
+                    subject: $('#subject').val()
+                };
+
+                $.ajax({
+                    url: '/booking-exam',
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+                    },
+                    error: function(xhr) {
+                        $('#responseMessage').html(`<div class="alert alert-danger">Failed to book exam day: ${xhr.responseJSON.error}</div>`);
+                    }
+                });
+            });
+
+            function loadTeachersAndClasses() {
+                // Fetch teachers and classes from the server and populate the select options
+                $.get('/get-teachers-and-classes', function(data) {
+                    // Populate teacherSelect with data.teachers
+                    data.teachers.forEach(function(teacher) {
+                        $('#teacherSelect').append(`<option value="${teacher.id}">${teacher.employee_name}</option>`);
+                    });
+
+                    // Populate classSelect with data.classes
+                    data.classes.forEach(function(classItem) {
+                        $('#classSelect').append(`<option value="${classItem.id}">${classItem.ClassName}</option>`);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

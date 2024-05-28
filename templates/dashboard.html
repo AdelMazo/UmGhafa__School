@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="/path-to-favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script> <!-- Include GaugeJS library -->
+    <style>
+        
+
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Heading styles */
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+        }
+
+        /* Container styles */
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        /* Card styles */
+        .card {
+            width: calc(33.33% - 40px);
+            margin: 20px;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            text-align: center;
+            overflow: hidden;
+            
+        }
+
+        /* Pseudo-element for gradient overlay */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #ff6f61);
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            opacity: 0.9;
+            transform: skewY(-6deg);
+        }
+
+        .card:hover::before {
+            opacity: 0.7;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02); /* Added scaling effect */
+        }
+        
+        /* Icon styles */
+        .icon {
+            display: block;
+            font-size: 3em;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* Title styles */
+        .card h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Data styles */
+        .card p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        /* Button styles */
+        .btn {
+            display: inline-block; /* Changed to inline-block */
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #f5d8d6;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease; /* Added transition for smoother animation */
+            letter-spacing: 1px;
+            text-decoration: none;
+            position: relative; /* Added for hover effect */
+            overflow: hidden; /* Added for hover effect */
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background-color: rgba(231, 135, 135, 0.2);
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+
+        .btn:hover::before {
+            width: 0;
+            height: 0;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn:hover {
+            background-color: #f8c4c1; /* Darken the background color on hover */
+            transform: translateY(-2px); /* Add a slight upward movement on hover */
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* Select box styles */
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #fff;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+        }
+        /* Responsive design */
+        @media screen and (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .card {
+                width: calc(100% - 40px);
+            }
+        }
+        /* Card hover effect */
+        .card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+
+        /* Button hover effect */
+        .btn:hover {
+            background-color: #F0F0F0;
+            transform: translateY(-2px);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Popup styles */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+        }
+
+        .popup h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .popup p {
+            margin-bottom: 20px;
+        }
+
+        .popup button {
+            padding: 10px 20px;
+            background-color: #ff6f61;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .popup button:hover {
+            background-color: #e2584d;
+        }
+        .currentAssessment {
+            color: #dd1541 !important; /* Red color for the current assessment */
+            font-weight: bold;
+        }
+
+
+
+
+        /* Add styles for data values (already defined earlier) */
+        .data-value {
+            color: #007bff; /* Blue color for data values */
+            font-weight: bold;
+        }
+        /* Style for academic year */
+        .academic-year {
+            color: #e2584d; /* Red color for emphasis */
+            font-weight: bold;
+        }
+        /* Add styles for select dropdown */
+        .select-dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #fff;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+            color: #495057; /* Text color for dropdown options */
+        }
+
+        .select-dropdown option {
+            color: #495057; /* Text color for dropdown options */
+        }
+        /* Add this CSS to your existing styles or create a new CSS file */
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6); /* Darker background with opacity */
+        }
+
+        .modal-content {
+            background-color: #fff; /* White background */
+            margin: 10% auto; /* 10% from the top and centered horizontally */
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px; /* Maximum width of modal */
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Add smoother shadow */
+            /* Add artistic elements */
+            border: 2px solid #ff4081; /* Pink border */
+            
+        }
+
+        /* Close button styles */
+        .close {
+            color: #ff4081; /* Pink color */
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #d50063; /* Darker pink color on hover */
+        }
+
+        /* Header styles */
+        .modal-content h2 {
+            color: #ff4081; /* Pink color */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Table styles */
+        #eventsTable {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #eventsTable th,
+        #eventsTable td {
+            padding: 12px;
+            border-bottom: 1px solid #ff4081; /* Pink border color */
+            text-align: left;
+            /* Add different colors for data */
+            color: #021322; /* Blue color */
+            font-size: 20px;
+        }
+
+        #eventsTable th {
+            background-color: #f7f7f7; /* Lighter background for headers */
+            font-weight: bold;
+            color: #ff4081; /* Pink color */
+        }
+
+        #eventsTable tbody tr:nth-child(even) {
+            background-color: #e1bee7; /* Light purple background */
+        }
+
+        #eventsTable tbody tr:hover {
+            background-color: #fce4ec; /* Light pink background on hover */
+        }
+        /* Gauge card design */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        /* Title */
+        h2 {
+            text-align: center;
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .gauge-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .gauge-card:hover {
+            transform: scale(1.05); /* Slight zoom effect on hover */
+            background-color: #f0f8ff; /* Light blue background on hover */
+        }
+
+        /* Period data styling */
+        p {
+            font-size: 16px;
+            color: #333;
+        }
+
+        span {
+            font-weight: bold;
+            color: #007bff; /* Blue color for percentage */
+        }
+
+        /* Classes without attendance styling */
+        .classes-without-attendance {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            text-align: left; /* Align text to the left */
+        }
+
+        .classes-without-attendance ul {
+            list-style-type: disc; /* Use bullet points */
+            padding-left: 20px; /* Indent bullet points */
+        }
+
+        .classes-without-attendance li {
+            margin-bottom: 5px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <h1>Um Ghafa School - Academic Year: <span id="academicYear" class="academic-year"></span></h1>
+
+    <div class="container">
+        <div class="card">
+            <div class="icon">👩‍🎓</div>
+            <h2>Total Students</h2>
+            <p>Total Students: <span id="totalStudents" class="data-value"></span></p>
+        </div>
+        <div class="card">
+            <div class="icon">📚</div>
+            <h2>Total Classes</h2>
+            <p>Total Classes: <span id="totalClasses" class="data-value"></span></p>
+        </div>
+        <div class="card">
+            <div class="icon">📅</div>
+            <h2>Upcoming Events</h2>
+            <!-- Button to explore events -->
+            <button id="exploreEventsButton" class="btn"><span>Explore Events</span></button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h2>Daily Attendance</h2>
+            <p><strong>Presence:</strong> <span id="dailyPresence" class="data-value"></span>%</p>
+            <p><strong>Absence:</strong> <span id="dailyAbsence" class="data-value"></span>%</p>
+            <p><strong>Morning First 3 periods Delay:</strong> <span id="morningDelay" class="data-value"></span>%</p>
+        </div>
+        <div class="card">
+            <h2>Assessment Results</h2>
+            <p id="currentAssessment" class="currentAssessment">Currently Explored: None</p>
+            <div class="form-group">
+                <!-- For Assessment Type Dropdown -->
+                <select id="assessmentTypeDropdown" class="select-dropdown">
+                    <option value="">Select Assessment Type</option>
+                    <option value="quizzes">Quizzes</option>
+                    <option value="formative_assessment">Formative Assessment</option>
+                    <option value="diagnostic_assessment">Diagnostic Assessment</option>
+                </select>
+
+                <!-- For Term Dropdown -->
+                <select id="termDropdown" class="select-dropdown">
+                    <option value="">Select Term</option>
+                    <option value="term1">Term 1</option>
+                    <option value="term2">Term 2</option>
+                    <option value="term3">Term 3</option>
+                </select>
+            </div>
+            <button id="exploreResultsButton" class="btn"><span>Explore Results</span></button>
+            <button id="hideResultsButton" class="btn"><span>Hide Results</span></button>
+        </div>
+        <div class="container">
+            <h2>Follow Up On Daily Attendance Registration</h2>
+    
+            <div class="grid-container">
+                <!-- Gauge cards for different periods -->
+                <div class="gauge-card" data-period="1">
+                    <canvas id="gauge1canvas" width="300" height="200"></canvas>
+                    <p>Period 1: <span id="gauge1Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="2">
+                    <canvas id="gauge2canvas" width="300" height="200"></canvas>
+                    <p>Period 2: <span id="gauge2Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="3">
+                    <canvas id="gauge3canvas" width="300" height="200"></canvas>
+                    <p>Period 3: <span id="gauge3Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="4">
+                    <canvas id="gauge4canvas" width="300" height="200"></canvas>
+                    <p>Period 4: <span id="gauge4Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="5">
+                    <canvas id="gauge5canvas" width="300" height="200"></canvas>
+                    <p>Period 5: <span id="gauge5Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="6">
+                    <canvas id="gauge6canvas" width="300" height="200"></canvas>
+                    <p>Period 6: <span id="gauge6Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="7">
+                    <canvas id="gauge7canvas" width="300" height="200"></canvas>
+                    <p>Period 7: <span id="gauge7Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+                <div class="gauge-card" data-period="8">
+                    <canvas id="gauge8canvas" width="300" height="200"></canvas>
+                    <p>Period 8: <span id="gauge8Percentage">0%</span></p>
+                    <div class="classes-without-attendance"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- Pop-up Message -->
+    <div class="overlay"></div>
+    <div class="popup">
+        <h2>Success!</h2>
+        <p>Results hidden successfully.</p>
+        <button onclick="hidePopup()">OK</button>
+    </div>
+    
+    <!-- Modal HTML -->
+    <div id="eventsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Events</h2>
+            <table id="eventsTable">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <!-- Include necessary JavaScript libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.0/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gaugejs/dist/gauge.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Create an object to store gauge instances
+            const gaugeInstances = {};
+
+            // Initial data fetching
+            fetchClasses();
+            fetchAttendanceData();
+
+            // Event listener setup function
+            function setupEventListeners() {
+                // Attach event handlers to form submission and button clicks
+                $('#attendance_form').on('submit', handleFormSubmit);
+                $('#save_all_button').on('click', saveAllChanges);
+                $('.close, #close_popup_button').on('click', hidePopup);
+            }
+
+            // Handle form submission
+            function handleFormSubmit(e) {
+                e.preventDefault();
+                const className = $('#class').val();
+                const selectedDate = $('#attendance_date').val();
+
+                if (!selectedDate) {
+                    console.error('Please select a date.');
+                    return;
+                }
+
+                fetchAttendance(className, selectedDate);
+            }
+
+            // Fetch class names and populate the class dropdown
+            function fetchClasses() {
+                $.ajax({
+                    url: '/get_classes',
+                    method: 'GET',
+                    success: function(classes) {
+                        populateClassesDropdown(classes);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching classes:", error);
+                    }
+                });
+            }
+
+            // Populate the class dropdown with fetched class names
+            function populateClassesDropdown(classes) {
+                const classSelect = $('#class');
+                classes.forEach(function(classData) {
+                    classSelect.append($('<option>', {
+                        value: classData.className,
+                        text: classData.className
+                    }));
+                });
+            }
+
+            // Fetch attendance data and process the response
+            function fetchAttendanceData() {
+                $.ajax({
+                    url: '/get_attendance_data',
+                    method: 'GET',
+                    success: function(response) {
+                        handleAttendanceDataResponse(response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching attendance data:", error);
+                    }
+                });
+            }
+
+            // Process and update the attendance data
+            function handleAttendanceDataResponse(response) {
+                const attendanceSummary = response.attendanceSummary;
+                processAttendanceSummary(attendanceSummary);
+                updateClassesWithoutAttendance(attendanceSummary);
+            }
+
+            // Process attendance summary and update gauges
+            function processAttendanceSummary(attendanceSummary) {
+                for (const period in attendanceSummary) {
+                    const data = attendanceSummary[period];
+                    const attendanceInputPercentage = data.attendance_input_percentage;
+
+                    // Update gauge for the period
+                    updateGauge(period, attendanceInputPercentage);
+                }
+            }
+
+            // Update the list of classes without attendance
+            function updateClassesWithoutAttendance(attendanceSummary) {
+                for (const period in attendanceSummary) {
+                    const data = attendanceSummary[period];
+                    const classesWithoutAttendance = data.classes_without_attendance;
+
+                    // Extract the period number from the period string
+                    const periodNumber = period.replace('Period ', '');
+
+                    // Locate the gauge card element for the current period using data-period attribute
+                    const gaugeCardElement = document.querySelector(`.gauge-card[data-period="${periodNumber}"]`);
+
+                    // Check if the gauge card element exists
+                    if (gaugeCardElement) {
+                        // Find the div element for classes without attendance
+                        const classesWithoutAttendanceElement = gaugeCardElement.querySelector('.classes-without-attendance');
+
+                        // Update the content with classes without attendance information
+                        classesWithoutAttendanceElement.innerText = `Classes without attendance: ${classesWithoutAttendance.join(', ')}`;
+                    } else {
+                        console.error(`Gauge card element for period ${periodNumber} not found.`);
+                    }
+                }
+            }
+
+            // Gather attendance data from the form
+            function gatherAttendanceData() {
+                const attendanceData = [];
+                $('.attendance-input').each(function() {
+                    const input = $(this);
+                    const studentId = input.data('student-id');
+                    const attendance = input.is(':checked') ? 1 : 0;
+                    attendanceData.push({ studentId, attendance });
+                });
+                return attendanceData;
+            }
+
+            // Send attendance data to the server
+            function sendAttendanceData(className, date, attendanceData) {
+                const requestData = {
+                    className,
+                    date,
+                    attendanceData
+                };
+
+                $.ajax({
+                    url: '/submit_attendance',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData),
+                    success: function(response) {
+                        console.log('Attendance data submitted successfully.');
+                        fetchAttendanceData(); // Refresh the attendance data
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error submitting attendance data:', error);
+                    }
+                });
+            }
+
+            // Show or hide the popup
+            function togglePopup() {
+                $('#attendance_popup').toggle();
+            }
+
+            // Hide the popup
+            function hidePopup() {
+                $('#attendance_popup').hide();
+            }
+
+            // Update the gauge for a specific period
+            function updateGauge(period, attendanceInputPercentage) {
+                const periodNumber = period.replace('Period ', '');
+
+                // Locate the gauge canvas for the period
+                const gaugeCanvas = document.querySelector(`#gauge${periodNumber}canvas`);
+                const gaugePercentageElement = document.querySelector(`#gauge${periodNumber}Percentage`);
+
+                // Check if the gauge canvas exists
+                if (!gaugeCanvas) {
+                    console.error(`Gauge canvas for period ${periodNumber} not found.`);
+                    return;
+                }
+
+                // Create or update the gauge instance for the period
+                if (!gaugeInstances[periodNumber]) {
+                    const opts = {
+                        angle: 0.2,
+                        lineWidth: 0.2,
+                        pointer: {
+                            length: 0.7,
+                            strokeWidth: 0.02,
+                            color: '#000'
+                        },
+                        limitMax: false,
+                        percentColors: [[0.0, "#a9d70b"], [0.5, "#f9c802"], [1.0, "#ff0000"]],
+                        strokeColor: '#E0E0E0'
+                    };
+                    gaugeInstances[periodNumber] = new Gauge(gaugeCanvas).setOptions(opts);
+                    gaugeInstances[periodNumber].maxValue = 100;
+                }
+
+                // Update the gauge value
+                gaugeInstances[periodNumber].set(attendanceInputPercentage);
+
+                // Update the gauge percentage text
+                gaugePercentageElement.textContent = `${attendanceInputPercentage.toFixed(2)}%`;
+            }
+        });
+        function exploreEvents() {
+            fetch('/get_exist_events')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch events');
+                    }
+                    return response.json();
+                })
+                .then(events => {
+                    console.log('Events fetched successfully:', events); // Log the fetched events
+                    // Clear existing table content
+                    $('#eventsTable tbody').empty();
+                    // Populate table with events
+                    events.forEach(event => {
+                        const newRow = `<tr><td>${event.event}</td><td>${event.description}</td><td>${event.date}</td></tr>`;
+                        console.log('Appending row:', newRow); // Log the new row before appending
+                        $('#eventsTable tbody').append(newRow);
+                    });
+                    // Show the events modal
+                    $('#eventsModal').show();
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    alert('Failed to fetch events. Please try again later.');
+                });
+        }
+
+        // Function to hide the events modal
+        function hideEventsModal() {
+            $('#eventsModal').hide();
+        }
+
+        // Event listener for Explore Events button
+        $('#exploreEventsButton').click(function() {
+            exploreEvents();
+        });
+
+        // Event listener for closing the modal
+        $('.close').click(function() {
+            hideEventsModal();
+        });
+
+        // Close modal when clicking outside the modal content
+        $(window).click(function(event) {
+            if (event.target == $('#eventsModal')[0]) {
+                hideEventsModal();
+            }
+        });
+        // Function to explore results based on selected assessment type and term
+        function exploreResults() {
+            var selectedAssessmentType = document.getElementById('assessmentTypeDropdown').value;
+            var selectedTerm = document.getElementById('termDropdown').value;
+            // Send a POST request to the server to update action column in tblresults
+            fetch('/update_action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    assessment_type: selectedAssessmentType,
+                    term: selectedTerm
+                })  // Send the selected assessment type and term as JSON
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update UI or perform additional actions if needed
+                    console.log('Results explored successfully for assessment type:', selectedAssessmentType, 'and term:', selectedTerm);
+                    return response.json(); // Parse response as JSON
+                } else {
+                    console.error('Failed to explore results for assessment type:', selectedAssessmentType, 'and term:', selectedTerm);
+                    showPopup("Failed to explore results. Please try again later.");
+                    throw new Error('Failed to explore results.'); // Throw an error to catch it later
+                }
+            })
+            .then(data => {
+                // Check if no data to explore
+                if (data.beforeUpdate === 0 && data.afterUpdate === 0) {
+                    showPopup("No data to explore.");
+                } else {
+                    showPopup("Results explored successfully.");
+                    
+                }
+            })
+            .catch(error => {
+                console.error('Error exploring results:', error);
+                showPopup("An error occurred while exploring results. Please try again later.");
+            });
+        }
+
+        // Function to hide results based on selected assessment type and term
+        function hideResults() {
+            var selectedAssessmentType = document.getElementById('assessmentTypeDropdown').value;
+            var selectedTerm = document.getElementById('termDropdown').value;
+            // Send a POST request to the server to update action column in tblresults
+            fetch('/update_action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    assessment_type: selectedAssessmentType,
+                    term: selectedTerm
+                })  // Send the selected assessment type and term as JSON
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update UI or perform additional actions if needed
+                    console.log('Results hidden successfully for assessment type:', selectedAssessmentType, 'and term:', selectedTerm);
+                    return response.json(); // Parse response as JSON
+                } else {
+                    console.error('Failed to hide results for assessment type:', selectedAssessmentType, 'and term:', selectedTerm);
+                    showPopup("Failed to hide results. Please try again later.");
+                    throw new Error('Failed to hide results.'); // Throw an error to catch it later
+                }
+            })
+            .then(data => {
+                // Check if no data to hide
+                if (data.beforeUpdate === 0 && data.afterUpdate === 0) {
+                    showPopup("No data to hide.");
+                } else {
+                    showPopup("Results hidden successfully.");
+                    
+                }
+            })
+            .catch(error => {
+                console.error('Error hiding results:', error);
+                showPopup("An error occurred while hiding results. Please try again later.");
+            });
+        }
+        
+        // Function to show the pop-up message
+        function showPopup(message) {
+            document.querySelector('.overlay').style.display = 'block';
+            var popup = document.querySelector('.popup');
+            popup.querySelector('p').textContent = message;
+            popup.style.display = 'block';
+        }
+    
+        // Function to hide the pop-up message
+        function hidePopup() {
+            document.querySelector('.overlay').style.display = 'none';
+            document.querySelector('.popup').style.display = 'none';
+        }
+    
+        // Function to fetch data and update dashboard
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/dashboard_data');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+                const data = await response.json();
+
+                // Update total students and total classes
+                document.getElementById('totalStudents').textContent = data.total_students;
+                // Update daily attendance card
+                document.getElementById('dailyPresence').textContent = data.daily_presence_percentage;
+                document.getElementById('dailyAbsence').textContent = data.daily_absence_percentage;
+                // Update morning delay card
+                document.getElementById('morningDelay').textContent = data.morning_delay_percentage_first_3_periods;
+                
+                console.log("Dashboard data updated successfully:", data);
+            } catch (error) {
+                console.error("Error updating dashboard:", error);
+            }
+        }
+        fetchExploredAssessments(); // Update currently explored assessments
+        // Function to update the academic year
+        function updateAcademicYear() {
+            var currentDate = new Date();
+            var currentMonth = currentDate.getMonth() + 1; // Adding 1 to get the month from 1 to 12
+            var currentYear = currentDate.getFullYear();
+            var nextYear = currentYear + 1;
+            var academicYear;
+            if (currentMonth >= 9) { // Academic year starts from September
+                academicYear = currentYear + '-' + nextYear;
+            } else {
+                academicYear = currentYear - 1 + '-' + currentYear;
+            }
+            document.getElementById('academicYear').textContent = academicYear;
+        }
+
+        // Function to fetch currently explored assessments
+        async function fetchExploredAssessments() {
+            try {
+                const response = await fetch('/explored_assessments');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch explored assessments');
+                }
+                const data = await response.json();
+                const exploredAssessments = data.explored_assessments;
+
+                // Update the UI with the fetched data
+                const currentAssessmentElement = document.getElementById('currentAssessment');
+                if (exploredAssessments.length === 0) {
+                    currentAssessmentElement.textContent = "Currently Explored: None";
+                } else {
+                    // Construct a string of explored assessments
+                    const exploredAssessmentsString = exploredAssessments.map(assessment => {
+                        const [assessmentType, term] = assessment.split(' '); // Split the string into assessment type and term
+                        return capitalizeFirstLetter(assessmentType) + " " + capitalizeFirstLetter(term);
+                    }).join(", ");
+                    currentAssessmentElement.textContent = "Currently Explored: " + exploredAssessmentsString;
+                }
+            } catch (error) {
+                console.error("Error fetching explored assessments:", error);
+            }
+        }
+
+        // Function to capitalize the first letter of a string
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Wait for the DOM content to be fully loaded before calling updateDashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Call updateDashboard when the page loads
+            updateDashboard();
+
+            // Update the academic year when the page loads
+            updateAcademicYear();
+
+            // Fetch and display currently explored assessments
+            fetchExploredAssessments();
+
+            // Event listener for Explore Results button
+            document.getElementById('exploreResultsButton').addEventListener('click', function() {
+                console.log("Explore Results button clicked"); // Debug statement
+                exploreResults();
+            });
+
+            // Event listener for Hide Results button
+            document.getElementById('hideResultsButton').addEventListener('click', function() {
+                console.log("Hide Results button clicked"); // Debug statement
+                hideResults();
+            });
+            // Event listener for Explore Events button
+            document.getElementById('exploreEventsButton').addEventListener('click', function() {
+                exploreEvents();
+            });
+            
+        });
+</script>
+</body>
+
+</html>

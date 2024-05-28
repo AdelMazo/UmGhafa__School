@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management Software</title>
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="mcd-menu">
+        <div class="sidebar-header">
+            <h2></h2>
+        </div>
+        <ul class="clearfix menu">
+            <!-- Menu items with data-url attribute -->
+            <!-- Update data-url values to match your Flask routes -->
+            <li>
+                <a href="#" class="menu-item"><i class="fas fa-user-graduate"></i> Students</a>
+                <ul class="submenu">
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('attendance') }}">Attendance</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_attendance') }}">Manage Attendance</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('results') }}">Results</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('manage_results') }}">Manage Results</a></li>
+                    <li><a href="#" class="submenu-link" data-url="{{ url_for('booking_exam') }}">Booking Exam</a></li>
+                </ul>
+            </li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li> <!-- Add logout link/button -->
+        </ul>
+    </div>
+    <div class="content">
+        <!-- Main content here -->
+        <!-- The initial content will be loaded dynamically -->
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to update dashboard data
+            function updateDashboard() {
+                fetch('/dashboard_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update dashboard data
+                        $('#totalStudents').text(data.total_students);
+                        $('#totalClasses').text(data.total_classes);
+                        document.getElementById('dailyPresence').textContent = data.daily_presence_percentage;
+                        document.getElementById('dailyAbsence').textContent = data.daily_absence_percentage;
+                        document.getElementById('morningDelay').textContent = data.morning_delay_percentage_first_3_periods;
+
+                        document.getElementById('exploreResultsButton').addEventListener('click', function() {
+                            console.log("Explore Results button clicked");
+                            exploreResults();
+                        });
+
+                        document.getElementById('hideResultsButton').addEventListener('click', function() {
+                            console.log("Hide Results button clicked");
+                            hideResults();
+                        });
+
+                        var currentDate = new Date();
+                        var currentMonth = currentDate.getMonth() + 1;
+                        var currentYear = currentDate.getFullYear();
+                        var nextYear = currentYear + 1;
+                        var academicYear;
+                        if (currentMonth >= 8) {
+                            academicYear = currentYear + '/' + nextYear;
+                        } else {
+                            academicYear = (currentYear - 1) + '/' + currentYear;
+                        }
+                        document.getElementById('academicYear').textContent = academicYear;
+                    })
+                    .catch(error => console.error('Error fetching dashboard data:', error));
+            }
+
+            // Load initial "Results" page content
+            var initialUrl = "{{ url_for('results') }}";
+            $('.content').load(initialUrl);
+
+            // Toggle submenu when menu item is clicked
+            $('.menu-item').click(function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                $(this).next('.submenu').toggle();
+            });
+
+            // Load submenu content dynamically into the main content area
+            $('.submenu-link').click(function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var url = $(this).data('url');
+                $('.content').load(url);
+            });
+        });
+    </script>
+</body>
+</html>

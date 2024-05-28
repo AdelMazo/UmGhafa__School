@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Student</title>
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50; /* Match the color of pop-up title from the first HTML */
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50; /* Match the background color of the pop-up button from the first HTML */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049; /* Match the hover background color of the pop-up button from the first HTML */
+        }
+        .success-message {
+            text-align: center;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Pop-up Message Styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            opacity: 0;
+            animation: slideIn 0.5s forwards;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #4CAF50; /* Match the color of pop-up title from the first HTML */
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555; /* Match the color of pop-up message from the first HTML */
+            text-align: center;
+        }
+
+        .popup button {
+            background-color: #4CAF50; /* Match the background color of the pop-up button from the first HTML */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            transition: background-color 0.3s ease;
+        }
+
+        .popup button:hover {
+            background-color: #45a049; /* Match the hover background color of the pop-up button from the first HTML */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -70%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Update Student</h2>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <!-- Student update form -->
+        <form id="update_student_form" method="POST" action="{{ url_for('update_student', student_id=student_data[0]) }}">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ student_data[1] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="emirates_id">Emirates ID</label>
+                <input type="text" id="emirates_id" name="emirates_id" value="{{ student_data[2] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="student_number">Student Number</label>
+                <input type="text" id="student_number" name="student_number" value="{{ student_data[3] }}" required>
+            </div>
+            <div class="form-group">
+                <label>Gender</label><br>
+                <input type="radio" id="male" name="gender" value="Male" {% if student_data[4] == 'Male' %}checked{% endif %} required>
+                <label for="male">Male</label>
+                <input type="radio" id="female" name="gender" value="Female" {% if student_data[4] == 'Female' %}checked{% endif %} required>
+                <label for="female">Female</label>
+            </div>
+            <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob" name="dob" value="{{ student_data[6] }}" required>
+            </div>
+            <button type="submit">Update</button>
+        </form>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#update_student_form').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+    
+                // Serialize form data
+                var formData = $(this).serialize();
+    
+                // Submit form data using AJAX
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: $(this).attr('method'),
+                    data: formData,
+                    success: function(response) {
+                        // Show pop-up message
+                        $('.overlay').show();
+                        $('.popup').show();
+    
+                        // Hide pop-up after 3 seconds
+                        setTimeout(function() {
+                            hidePopup();
+                        }, 3000);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error if needed
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    
+        // Function to hide the pop-up message
+        function hidePopup() {
+            $('.overlay').hide();
+            $('.popup').hide();
+        }
+    
+    </script>
+    
+    <!-- Pop-up Message -->
+    <div class="overlay"></div>
+    <div class="popup">
+        <h2>Success!</h2>
+        <p>The student has been updated successfully.</p>
+        <button onclick="hidePopup()">OK</button>
+    </div>
+    
+</body>
+</html>
+

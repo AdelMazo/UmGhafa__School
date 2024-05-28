@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Report </title>
+    <!-- Linking to a CSS framework for enhanced styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS for additional styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 3rem;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #007bff;
+        }
+        form {
+            max-width: 600px;
+            margin: auto;
+        }
+        label {
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: #ffffff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        #reportCardData {
+            margin-top: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #0056b3;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tbody tr:hover {
+            background-color: #cce5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Students Report </h1>
+
+        <form id="reportCardForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="academicYear" class="form-label">Academic Year:</label>
+                    <select class="form-select" name="academicYear" id="academicYear" onchange="fetchTermAndAssessment()">
+                        <option value="">Select Year</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="term" class="form-label">Term:</label>
+                    <select class="form-select" name="term" id="term" onchange="fetchAssessmentTypes()"></select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="assessmentType" class="form-label">Assessment Type:</label>
+                    <select class="form-select" name="assessmentType" id="assessmentType"></select>
+                </div>
+                <div class="col-md-6">
+                    <label for="class_name" class="form-label">Select Class:</label>
+                    <select class="form-select" id="class_name">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <div id="reportCardData">
+            <!-- Report card data will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            fetchAcademicYears();
+        });
+
+        function fetchAcademicYears() {
+            console.log("Fetching academic years...");
+            fetch('/fetch_academic_years')
+            .then(response => response.json())
+            .then(data => {
+                console.log("Received academic years:", data);
+                const academicYearSelect = document.getElementById('academicYear');
+                academicYearSelect.innerHTML = '';
+                const selectYearOption = document.createElement('option');
+                selectYearOption.value = '';  
+                selectYearOption.textContent = 'Select Year'; 
+                academicYearSelect.appendChild(selectYearOption);
+                data.forEach(years => {
+                    const option = document.createElement('option');
+                    option.value = `${years[0]}-${years[1]}`;
+                    option.textContent = `${years[0]} - ${years[1]}`;
+                    academicYearSelect.appendChild(option);
+                });
+                fetchTermAndAssessment();
+            })
+            .catch(error => console.error('Error fetching academic years:', error));
+        }
+
+        function fetchAssessmentTypes() {
+            console.log("Fetching assessment types...");
+            const academicYear = document.getElementById('academicYear').value;
+            const term = document.getElementById('term').value;
+            console.log("Selected academic year:", academicYear);
+            console.log("Selected term:", term);
+            fetch('/fetch_my_assessment_types', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ academicYear: academicYear, term: term })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Received assessment types:", data);
+                const assessmentSelect = document.getElementById('assessmentType');
+                assessmentSelect.innerHTML = '';
+                const selectAssessmentOption = document.createElement('option');
+                selectAssessmentOption.value = '';
+                selectAssessmentOption.textContent = 'Select Assessment Type'; // Empty option
+                assessmentSelect.appendChild(selectAssessmentOption);
+                data.assessment_types.forEach(assessment => {
+                    const option = document.createElement('option');
+                    option.value = assessment;
+                    option.textContent = assessment;
+                    assessmentSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching assessment types:', error));
+        }
+        
+        function fetchTermAndAssessment() {
+            console.log("Fetching terms...");
+            const academicYear = document.getElementById('academicYear').value;
+            console.log("Selected academic year:", academicYear);
+            if (!academicYear) return;
+
+            fetch('/fetch_terms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ academicYear: academicYear }) // Include only academicYear in the request body
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Received terms:", data);
+                const termSelect = document.getElementById('term');
+                termSelect.innerHTML = ''; // Clear existing options
+                data.terms.forEach(term => {
+                    const option = document.createElement('option');
+                    option.value = term;
+                    option.textContent = term;
+                    termSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching terms:', error));
+        }
+        
+        document.getElementById('reportCardForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            fetchReportCardData(); // Call fetchReportCardData() when the form is submitted
+        });
+
+        function fetchReportCardData() {
+            // Get form data
+            var academicYear = document.getElementById('academicYear').value;
+            var term = document.getElementById('term').value;
+            var assessmentType = document.getElementById('assessmentType').value;
+            var className = document.getElementById('class_name').value;
+
+            // Make AJAX request
+            fetch('/fetch_report_card', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    academicYear: academicYear,
+                    term: term,
+                    assessmentType: assessmentType,
+                    class_name: className
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle response data
+                if (data.error) {
+                    // Handle error
+                    console.error('Error:', data.error);
+                } else {
+                    // Process report card data
+                    var reportCardData = data.report_card_data;
+                    // Example: display report card data in console
+                    console.log('Report Card Data:', reportCardData);
+                    // Example: render report card data in HTML
+                    renderReportCard(reportCardData);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Function to render report card data in HTML
+        function renderReportCard(reportCardData) {
+            // Example: render report card data in a table
+            var table = '<table id="reportCardTable">';
+            table += '<thead><tr><th onclick="sortTable(0)">Student Name</th><th onclick="sortTable(1)">Student Number</th><th onclick="sortTable(2)">Class Name</th><th onclick="sortTable(3)">Subject</th><th onclick="sortTable(4)">Assessment Type</th><th onclick="sortTable(5)">Marks</th><th onclick="sortTable(6)">Behavior Notes</th></tr></thead>';
+            table += '<tbody>';
+            reportCardData.forEach(function(row) {
+                table += '<tr>';
+                table += '<td>' + row.student_name + '</td>';
+                table += '<td>' + row.student_number + '</td>';
+                table += '<td>' + row.class_name + '</td>'; // Display class name
+                table += '<td>' + row.subject + '</td>';
+                table += '<td>' + row.assessment_type + '</td>';
+                table += '<td>' + row.marks + '</td>';
+                table += '<td>' + row.behavior_notes + '</td>';
+                table += '</tr>';
+            });
+            table += '</tbody>';
+            table += '</table>';
+
+            // Example: render table in a div with id 'reportCardData'
+            document.getElementById('reportCardData').innerHTML = table;
+        }
+
+        // Function to sort the table by column index
+        function sortTable(columnIndex) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("reportCardTable");
+            switching = true;
+            /* Make a loop that will continue until
+            no switching has been done: */
+            while (switching) {
+                // Start by saying: no switching is done:
+                switching = false;
+                rows = table.rows;
+                /* Loop through all table rows (except the
+                first, which contains table headers): */
+                for (i = 1; i < (rows.length - 1); i++) {
+                    // Start by saying there should be no switching:
+                    shouldSwitch = false;
+                    /* Get the two elements you want to compare,
+                    one from current row and one from the next: */
+                    x = rows[i].getElementsByTagName("TD")[columnIndex];
+                    y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+                    // Check if the two rows should switch place:
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        // If so, mark as a switch and break the loop:
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    /* If a switch has been marked, make the switch
+                    and mark that a switch has been done: */
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+                
+        // Call fetchReportCardData() when the academic year, term, assessment type, or class is changed
+        $('#academicYear, #term, #assessmentType, #class_name').change(fetchReportCardData);
+
+        // Call fetchClasses() when the assessment type is changed
+        document.getElementById('assessmentType').addEventListener('change', fetchClasses);
+        // Call fetchClasses() when the term is changed
+        document.getElementById('term').addEventListener('change', fetchClasses);
+        // Call fetchClasses() when the academic year is changed
+        document.getElementById('academicYear').addEventListener('change', fetchClasses);
+
+        function fetchClasses() {
+            console.log("Fetching classes...");
+            const academicYear = document.getElementById('academicYear').value;
+            const term = document.getElementById('term').value;
+            const assessmentType = document.getElementById('assessmentType').value;
+            console.log("Selected academic year:", academicYear);
+            console.log("Selected term:", term);
+            console.log("Selected assessment type:", assessmentType);
+
+            fetch('/fetch_my_classes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ academicYear: academicYear, term: term, assessmentType: assessmentType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Received classes:", data);
+                const classSelect = document.getElementById('class_name');
+                classSelect.innerHTML = ''; // Clear existing options
+                const selectClassOption = document.createElement('option');
+                selectClassOption.value = '';
+                selectClassOption.textContent = 'Select Class'; // Empty option
+                classSelect.appendChild(selectClassOption);
+                if (data.classes) {
+                    data.classes.forEach(className => {
+                        const option = document.createElement('option');
+                        option.value = className;
+                        option.textContent = className;
+                        classSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching classes:', error));
+        }
+    </script>
+</body>
+</html>

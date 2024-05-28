@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Attendance</title>
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a modern font */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px; /* Increase the max width of the container */
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px; /* Rounded container corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff; /* Blue color for title */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px; /* Larger font size for title */
+            text-transform: uppercase; /* Convert title to uppercase */
+            letter-spacing: 2px; /* Increase letter spacing */
+            font-family: 'Montserrat', sans-serif; /* Use a decorative font for title */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555; /* Dark gray label text */
+        }
+
+        select, input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        select#class {
+            background-color: #fff; /* White background */
+            color: #555; /* Dark gray text */
+            transition: border-color 0.3s ease;
+        }
+
+        select#class option {
+            color: #333; /* Dark text for options */
+        }
+
+        select#class:hover,
+        select#class:focus {
+            outline: none;
+            border-color: #4CAF50; /* Green border on hover/focus */
+        }
+
+        button[type="submit"], #save_all_button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px; /* Increase font size */
+            outline: none; /* Remove default focus outline */
+            margin-top: 10px;
+        }
+
+        button[type="submit"]:hover, #save_all_button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .attendance-table th, .attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            /* Set a fixed width for the period columns */
+            width: 50px; /* Adjust this value as needed */
+        }
+
+        .attendance-table th:nth-child(-n+2),
+        .attendance-table td:nth-child(-n+2) {
+            /* Keep the first two columns (Student Name and Student Number) wider */
+            width: auto;
+        }
+
+        /* Added styles for dropdowns */
+        .attendance-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #fff;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        .attendance-select:hover,
+        .attendance-select:focus {
+            outline: none;
+            border-color: #4CAF50; /* Green border on hover/focus */
+        }
+
+        /* Styles for pop-up */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        .popup-content {
+            text-align: center;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #007bff; /* Blue color */
+            margin-bottom: 20px;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555; /* Darker text color */
+        }
+
+        .popup button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            outline: none; /* Remove default focus outline */
+        }
+
+        .popup button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #555;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Manage Attendance</h2>
+        <form id="attendance_form">
+            <div class="form-group">
+                <label for="class">Select Class:</label>
+                <select id="class" name="class" required>
+                    <option value="">Select Class</option>
+                    <!-- Option values will be filled dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="attendance_date">Date:</label>
+                <input type="date" id="attendance_date" name="attendance_date" required>
+            </div>
+            <button type="submit">Show Students</button>
+            <button id="save_all_button" type="button">Save changes</button>
+        </form>
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student Number</th>
+                    <th>Period 1 </th>
+                    <th>Period 2 </th>
+                    <th>Period 3 </th>
+                    <th>Period 4 </th>
+                    <th>Period 5 </th>
+                    <th>Period 6 </th>
+                    <th>Period 7 </th>
+                    <th>Period 8 </th>
+                    <th>Specialist Comments </th>
+                </tr>
+            </thead>
+            <tbody id="attendance_table_body">
+                <!-- Student attendance rows will be added dynamically here -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Popup for success message -->
+    <div class="overlay" id="overlay">
+        <div class="popup" id="success_popup">
+            <div class="popup-content">
+                <span class="close">&times;</span>
+                <h2>Success</h2>
+                <p>Attendance submitted successfully!</p>
+                <button id="close_popup_button">Close</button>
+            </div>
+        </div>
+    </div>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Event listener for change event on select elements
+        $(document).on('change', '.attendance-select', function() {
+            updateRowColors();
+        });
+
+        // Function to update row colors based on selected attendance status
+        function updateRowColors() {
+            $('.attendance-select').each(function() {
+                var selectedOption = $(this).val();
+                $(this).closest('td').css('background-color', getColor(selectedOption));
+            });
+        }
+
+        // Event listener for close button in pop-up
+        $(document).on('click', '.close', function() {
+            hidePopup();
+        });
+
+        // Event listener for close button in pop-up content
+        $('#close_popup_button').click(function() {
+            hidePopup();
+        });
+
+        // Function to hide the pop-up
+        function hidePopup() {
+            $('.overlay').hide();
+            $('.popup').hide();
+        }
+
+        // Function to handle form submission
+        $('#attendance_form').submit(function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            var className = $('#class').val(); // Retrieve class ID from the selected option
+            var selectedDate = $('#attendance_date').val();
+
+            // Validate selected date
+            if (selectedDate === '') {
+                console.error('Please select a date.');
+                return;
+            }
+
+            // AJAX request for fetching attendance data
+            $.ajax({
+                url: '/get_attendance',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    attendanceDate: selectedDate,
+                    className: className
+                }),
+                success: function(response) {
+                    var attendanceTableBody = response.attendance_table_body;
+                    console.log("Attendance Table Body:", attendanceTableBody);
+
+                    // Clear the attendance table body
+                    $('#attendance_table_body').empty();
+
+                    if ($.isEmptyObject(attendanceTableBody)) {
+                        $('#attendance_table_body').append('<tr><td colspan="10">No data available</td></tr>');
+                    } else {
+                        populateTableBodyWithData(attendanceTableBody);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching attendance data:", error);
+                    // Handle error here
+                }
+            });
+        });
+
+        // Function to populate the table body with received data
+        function populateTableBodyWithData(attendanceTableBody) {
+            $.each(attendanceTableBody, function(studentNumber, attendanceInfo) {
+                var studentName = attendanceInfo.student_name;
+                var specialistComments = attendanceInfo.specialist_comments; // Retrieve specialist comments here
+                console.log("Specialist Comments:", specialistComments); // Add this line to log the specialist comments
+                var row = $('<tr></tr>');
+                row.append('<td>' + studentName + '</td>');
+                row.append('<td>' + studentNumber + '</td>');
+
+                for (var i = 1; i <= 8; i++) {
+                    var attendanceData = attendanceInfo.periods[i];
+                    var attendance = attendanceData ? attendanceData.attendance : '';
+
+                    var dropdown = '<td><select class="attendance-select" data-period="' + i + '">';
+                    dropdown += '<option value="">-</option>';
+                    dropdown += '<option value="Present"' + (attendance === 'Present' ? ' selected' : '') + '>P</option>';
+                    dropdown += '<option value="Late"' + (attendance === 'Late' ? ' selected' : '') + '>L</option>';
+                    dropdown += '<option value="Absent"' + (attendance === 'Absent' ? ' selected' : '') + '>A</option>';
+                    dropdown += '<option value="Sleep"' + (attendance === 'Sleep' ? ' selected' : '') + '>SP</option>';
+                    dropdown += '<option value="Excused"' + (attendance === 'Excused' ? ' selected' : '') + '>E</option>';
+                    dropdown += '</select></td>';
+
+                    row.append(dropdown);
+                }
+
+                // Set specialist comments input field for each student
+                row.append('<td><input type="text" class="specialist-comments" name="specialist_comments" value="' + (specialistComments || '') + '"></td>');
+
+                $('#attendance_table_body').append(row);
+            });
+
+            // Update row colors based on selected attendance status
+            updateRowColors();
+
+            // Event listener for "Save All" button
+            $('#save_all_button').click(function() {
+                saveAllChanges();
+            });
+        }
+
+        // Function to save all changes in the attendance table
+        function saveAllChanges() {
+            var attendanceData = [];
+
+            $('#attendance_table_body tr').each(function() {
+                var studentName = $(this).find('td:nth-child(1)').text();
+                var studentNumber = $(this).find('td:nth-child(2)').text();
+                var periods = {};
+
+                $(this).find('select.attendance-select').each(function() {
+                    var period = $(this).data('period');
+                    var attendance = $(this).val();
+                    periods[period] = attendance;
+                });
+
+                var specialistComments = $(this).find('input.specialist-comments').val();
+
+                var studentAttendance = {
+                    student_name: studentName,
+                    student_number: studentNumber,
+                    periods: periods,
+                    specialist_comments: specialistComments
+                };
+
+                attendanceData.push(studentAttendance);
+                
+            });
+
+            
+
+            $.ajax({
+                url: '/save_attendance',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    attendanceDate: $('#attendance_date').val(),
+                    className: $('#class option:selected').text(),
+                    attendanceData: attendanceData
+                }),
+                success: function(response) {
+                    showSuccessPopup();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error saving attendance:", error);
+                    // Handle error here
+                }
+            });
+        }
+
+        // Function to show success pop-up
+        function showSuccessPopup() {
+            $('.overlay').show();
+            $('#success_popup').show();
+        }
+
+        // Function to get color based on attendance status
+        function getColor(attendance) {
+            switch (attendance) {
+                case 'Present':
+                    return '#4CAF50';
+                case 'Late':
+                    return '#ff9800';
+                case 'Absent':
+                    return '#f44336';
+                case 'Sleep':
+                    return '#2196F3';
+                case 'Excused':
+                    return '#9c27b0';
+                default:
+                    return '#fff';
+            }
+        }
+
+        // Fetch existing classes and populate the select box
+        $.ajax({
+            url: '/get_classes',
+            method: 'GET',
+            success: function(classes) {
+                var classSelect = $('#class');
+                classes.forEach(function(classData) {
+                    classSelect.append($('<option>', {
+                        value: classData.className,
+                        text: classData.ClassName
+                    }));
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching classes:", error);
+                // Handle error here
+            }
+        });
+
+        // Function to handle adding student attendance rows dynamically
+        function addAttendanceRow(studentName, studentNumber) {
+            var row = $('<tr></tr>');
+            row.append('<td>' + studentName + '</td>');
+            row.append('<td>' + studentNumber + '</td>');
+
+            for (var i = 1; i <= 8; i++) {
+                var dropdown = '<td><select class="attendance-select" data-period="' + i + '">';
+                dropdown += '<option value="">-</option>';
+                dropdown += '<option value="Present">P</option>';
+                dropdown += '<option value="Late">L</option>';
+                dropdown += '<option value="Absent">A</option>';
+                dropdown += '<option value="Sleep">SP</option>';
+                dropdown += '<option value="Excused">E</option>';
+                dropdown += '</select></td>';
+                row.append(dropdown);
+            }
+
+            row.append('<td><input type="text" class="specialist-comments" name="specialist_comments" value="' + (specialistComments || '') + '"></td>');
+
+
+            $('#attendance_table_body').append(row);
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Classes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a modern font */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px; /* Increase the max width of the container */
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px; /* Rounded container corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff; /* Blue color for title */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px; /* Larger font size for title */
+            text-transform: uppercase; /* Convert title to uppercase */
+            letter-spacing: 2px; /* Increase letter spacing */
+            font-family: 'Montserrat', sans-serif; /* Use a decorative font for title */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            background-color: #f9f9f9; /* Background color for table cells */
+            color: #333; /* Text color for table cells */
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #e6e6e6; /* Alternate row color */
+        }
+
+        /* Update Form Styles */
+        .update-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8ecce;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .update-form h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .update-form label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            text-transform: capitalize;
+        }
+
+        .update-form input[type="text"],
+        .update-form input[type="number"] {
+            width: calc(100% - 24px); /* Adjusted for padding */
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .update-form input[type="text"]:focus,
+        .update-form input[type="number"]:focus {
+            border-color: #4CAF50;
+        }
+
+        button[type="submit"], #save_results_button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px; /* Increase font size */
+            outline: none; /* Remove default focus outline */
+        }
+
+        button[type="submit"]:hover, #save_results_button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        /* Icon Styles */
+        .icon-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .icon-container i {
+            cursor: pointer;
+            color: #555;
+            transition: color 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .icon-container i:hover {
+            color: #4CAF50;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Styles for pop-up */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        .popup-content {
+            text-align: center;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #007bff; /* Blue color */
+            margin-bottom: 20px;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555; /* Darker text color */
+        }
+
+        .popup button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            outline: none; /* Remove default focus outline */
+        }
+
+        .popup button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #555;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Classes</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Class Name</th>
+                    <th>Class Name Numeric</th>
+                    <th>Number of Students</th>
+                    <th>Section</th>
+                    <th>Creation Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class_data in class_data %}
+                <tr>
+                    <td>{{ class_data[0] }}</td>
+                    <td>{{ class_data[1] }}</td>
+                    <td>{{ class_data[2] }}</td>
+                    <td>{{ class_data[3] }}</td> <!-- New: Display Number of Students -->
+                    <td>{{ class_data[4] }}</td>
+                    <td>{{ class_data[5].strftime("%Y-%m-%d %H:%M:%S") }}</td> <!-- Assuming class_data[5] is the Creation Date --> <!-- Assuming class_data[5] is the Creation Date -->
+                    <td class="icon-container">
+                        <div class="tooltip">
+                            <i class="fas fa-edit" onclick="showUpdateForm('{{ class_data[0] }}', '{{ class_data[1] }}', '{{ class_data[2] }}', '{{ class_data[3] }}', '{{ class_data[4] }}')"></i>
+                            <span class="tooltiptext">Edit Class</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Update Form -->
+    <div class="update-form" id="update-form">
+        <h2>Update Class Information</h2>
+        <form id="update-class-form" action="/update_class" method="POST">
+            <input type="hidden" id="class_id" name="class_id" value="">
+            <label for="classname">Class Name</label>
+            <input type="text" id="classname" name="classname" required><br><br>
+            
+            <label for="classnamenumeric">Class Name Numeric</label>
+            <input type="number" id="classnamenumeric" name="classnamenumeric" required><br><br>
+
+            <label for="num_students">Number of Students:</label>
+            <input type="number" id="num_students" name="num_students" required min="0"><br><br>
+            
+            <label for="section">Section</label>
+            <input type="text" id="section" name="section" required><br><br>
+            
+            <button type="submit">Update Class</button>
+        </form>
+    </div>
+    <!-- Popup for success message -->
+    <div class="overlay" id="overlay">
+        <div class="popup" id="success_popup">
+            <div class="popup-content">
+                <span class="close">&times;</span>
+                <h2>Success</h2>
+                <p>class updated successfully!</p>
+                <button id="close_popup_button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- JavaScript -->
+    <script>
+        function showUpdateForm(classId, className, classNumeric, numStudents, section) {
+            // Add event listener for close button in pop-up
+            $('.close').click(function() {
+                hidePopup();
+                hideUpdateForm(); // Call hideUpdateForm to hide the update form
+            });
+
+            // Add event listener for close button in pop-up content
+            $('#close_popup_button').click(function() {
+                hidePopup();
+                hideUpdateForm(); // Call hideUpdateForm to hide the update form
+            });
+
+            // Function to hide the pop-up
+            function hidePopup() {
+                $('.overlay').hide();
+                $('.popup').hide();
+            }
+
+            // Function to hide the update form
+            function hideUpdateForm() {
+                $('.update-form').slideUp(); // Slide up to hide the update form
+            }
+            // Show the update form with a slide-down effect
+            $('.update-form').slideDown();
+            
+            // Populate form fields
+            $('#class_id').val(classId);
+            $('#classname').val(className);
+            $('#classnamenumeric').val(classNumeric);
+            $('#num_students').val(numStudents); // Add this line to populate the number of students field
+            $('#section').val(section);
+        }
+
+    
+        $(document).ready(function() {
+            // Function to handle form submission
+            $('#update-class-form').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+    
+                // Serialize form data
+                var formData = $(this).serialize();
+    
+                // Submit form data using AJAX
+                $.ajax({
+                    url: '/update_class', // Change the URL to your Flask route for updating class
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Show pop-up message
+                        $('.overlay').show();
+                        $('.popup').show();
+
+                        
+
+                        // Hide the pop-up after 3 seconds
+                        setTimeout(function() {
+                            hidePopup();
+                            resetFormFields(); // Call resetFormFields to clear form fields
+                            hideUpdateForm(); // Call hideUpdateForm to hide the update form
+                        }, 3000);
+                    },    
+                    error: function(xhr, status, error) {
+                        // Handle error if needed
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student/Parent Login</title>
+    <!-- Add any additional CSS styles or links here -->
+</head>
+<body>
+    <div class="login-container">
+        <h2>Student/Parent Login</h2>
+        <form action="{{ url_for('student_parent_login') }}" method="post">
+            <label for="student-parent-username">Username:</label>
+            <input type="text" id="student-parent-username" name="username" required>
+            <label for="student-parent-password">Password:</label>
+            <input type="password" id="student-parent-password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <!-- Add any additional HTML content here -->
+    </div>
+</body>
+</html>

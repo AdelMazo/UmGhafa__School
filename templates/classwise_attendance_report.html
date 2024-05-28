@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class-wise Attendance Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script> <!-- Include GaugeJS library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Include any necessary CSS files or stylesheets -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .date-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        label, button {
+            margin-right: 10px;
+            font-size: 16px;
+            color: #444;
+        }
+
+        input[type="date"], select {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #overall_attendance_percentage {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        #overall_attendance_percentage h2 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #gaugeCanvas {
+            margin: 0 auto;
+            display: block;
+        }
+
+        #gaugeValue {
+            text-align: center;
+            font-size: 24px;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        #attendance_meter {
+            margin: 30px auto;
+            text-align: center;
+        }
+
+        #attendance_trends_chart_container {
+            margin: 0 auto;
+            max-width: 800px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        #error_message {
+            text-align: center;
+            color: red;
+            margin-top: 20px;
+        }
+
+        #loading_indicator {
+            text-align: center;
+            margin-top: 20px;
+            color: #444;
+        }
+        /* Example CSS Enhancements */
+
+        /* Typography */
+        body {
+            font-family: 'Roboto', sans-serif; /* Use Google Font 'Roboto' */
+        }
+
+        /* Color Scheme */
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049; /* Darker Green on Hover */
+        }
+
+        .error-message {
+            color: #f44336; /* Red */
+        }
+
+        /* Input Field Styling */
+        input[type="date"], select {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd; /* Light Gray Border */
+            border-radius: 5px;
+            outline: none;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 600px) {
+            /* Adjust styling for smaller screens */
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Class-wise Attendance Report</h1>
+
+    <!-- Date Selection Form -->
+    <form id="attendance_form">
+        <div class="date-container">
+            <label for="start_date">From:</label>
+            <input type="date" id="start_date" name="start_date">
+
+            <label for="end_date">To:</label>
+            <input type="date" id="end_date" name="end_date">
+        </div>
+        
+        <label for="class">Select Class:</label>
+        <select id="class" name="selected_class" required>
+            <option value="">Select Class</option>
+            <!-- Options will be populated dynamically -->
+        </select>
+        
+        <button type="button" onclick="updateAttendanceTrends()"><i class="fas fa-chart-line"></i> Update Chart</button>
+        <button type="button" onclick="displayOverallAttendance()"><i class="fas fa-chart-pie"></i> Display Overall Attendance</button>
+    </form>
+
+    <!-- Overall Attendance Percentage -->
+    <div id="overall_attendance_percentage">
+        <h2>Overall Attendance Percentage</h2>
+        <canvas id="gaugeCanvas" width="300" height="150"></canvas>
+        <div id="gaugeValue">0%</div>
+        <ul>
+            <!-- This will be populated dynamically -->
+        </ul>
+    </div>
+
+    <!-- Meter to display general attendance percentage -->
+    <div id="attendance_meter"></div>
+
+    <!-- Attendance Trends -->
+    <div id="attendance_trends_chart_container">
+        <canvas id="attendance_trends_chart" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Error Message Section -->
+    <div id="error_message" style="display: none;"></div>
+
+    <!-- Loading Indicator -->
+    <div id="loading_indicator" style="display: none;">Loading...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Function to fetch overall attendance percentage for all classes
+        function fetchOverallAttendance(startDate, endDate) {
+            // Make an AJAX request to fetch overall attendance percentage
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: '/overall_attendance_percentage',
+                    type: 'GET',
+                    data: {
+                        start_date: startDate,
+                        end_date: endDate
+                    },
+                    success: function(response) {
+                        // Resolve the promise with the overall attendance percentage
+                        resolve(response.overall_attendance_percentage);
+                    },
+                    error: function(xhr, status, error) {
+                        // Reject the promise with the error message
+                        reject(error);
+                    }
+                });
+            });
+        }
+    
+        $(document).ready(function() {
+            // Fetch classes and populate the select box
+            fetchClasses().then(classes => {
+                var classSelect = $('#class');
+                classes.forEach(function(classData) {
+                    classSelect.append($('<option>', {
+                        value: classData.ClassName,
+                        text: classData.ClassName
+                    }));
+                });
+            }).catch(error => console.error(error));
+        });
+    
+        // Function to generate attendance trends chart
+        function generateAttendanceTrendsChart(attendanceTrendsData, selectedClass) {
+            // Check if the chart already exists and destroy it
+            if (window.attendanceTrendsChart) {
+                window.attendanceTrendsChart.destroy();
+            }
+    
+            const labels = Object.keys(attendanceTrendsData); // Use attendance dates as labels
+            const dataPoints = Object.values(attendanceTrendsData); // Use attendance percentages as data points
+    
+            const ctx = document.getElementById('attendance_trends_chart').getContext('2d');
+            try {
+                window.attendanceTrendsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: selectedClass === '' ? 'Select a Class' : 'Class ' + selectedClass,
+                            data: dataPoints,
+                            borderColor: selectedClass === '' ? 'gray' : 'blue',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: 100
+                            },
+                            x: {
+                                display: true,
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 10, // Maximum number of ticks to display
+                                    maxRotation: 0, // Rotate x-axis labels if needed
+                                    callback: function(value, index, values) {
+                                        // Check if value is a string
+                                        if (typeof value === 'string') {
+                                            // Format the date for display
+                                            const dateParts = value.split('-');
+                                            return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                                        } else {
+                                            return value; // Return value as is
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error generating attendance trends chart:", error);
+            }
+    
+            console.log("Attendance Trends Chart Data:", attendanceTrendsData); // Log the attendance trends data
+            console.log("Selected Class:", selectedClass); // Log the selected class
+        }
+    
+        // Update attendance trends chart based on selected class and period
+        function updateAttendanceTrends() {
+            var startDate = document.getElementById('start_date').value;
+            var endDate = document.getElementById('end_date').value;
+            var selectedClass = document.getElementById('class').value;
+    
+            // Show loading indicator
+            $('#loading_indicator').show();
+    
+            // Fetch updated data based on selected date and class
+            fetchAttendanceTrendsData(selectedClass, startDate, endDate)
+                .then(data => {
+                    // Hide loading indicator
+                    $('#loading_indicator').hide();
+                    
+                    // If "All Classes" is selected, aggregate attendance percentages
+                    if (selectedClass === '') {
+                        console.log("Data before aggregation:", data); // Print the data before aggregation
+                        data = aggregateAttendanceData(data);
+                        console.log("Data after aggregation:", data); // Print the data after aggregation
+                    }
+                    
+                    // Generate attendance trends chart with the fetched data
+                    generateAttendanceTrendsChart(data, selectedClass);
+                })
+                .catch(error => {
+                    // Hide loading indicator
+                    $('#loading_indicator').hide();
+                    
+                    // Display error message
+                    $('#error_message').text('Error fetching attendance trends data: ' + error).show();
+                });
+        }
+    
+        // Function to display overall attendance percentage for all classes
+        function displayOverallAttendance() {
+            var startDate = document.getElementById('start_date').value;
+            var endDate = document.getElementById('end_date').value;
+    
+            // Fetch overall attendance percentage for all classes within the selected date range
+            fetchOverallAttendance(startDate, endDate)
+                .then(percentage => {
+                    // Display the overall attendance percentage using JustGage
+                    displayGauge(percentage);
+                })
+                .catch(error => {
+                    // Display error message
+                    $('#error_message').text('Error fetching overall attendance percentage: ' + error).show();
+                });
+        }
+    
+        function displayGauge(percentage) {
+            var formattedPercentage = parseFloat(percentage).toFixed(1); // Format percentage with one decimal place
+            var opts = {
+                angle: 0, // The starting angle of the gauge
+                lineWidth: 0.4, // The line width of the gauge
+                radiusScale: 1, // The scale of the radius
+                pointer: {
+                    length: 0.6, // The length of the gauge pointer
+                    strokeWidth: 0.035, // The width of the gauge pointer
+                    color: '#000000' // The color of the gauge pointer
+                },
+                limitMax: false,     // If false, the max value of the gauge will be updated if value surpass max
+                limitMin: false,     // If true, the min value of the gauge will be fixed
+                colorStart: '#6FADCF',   // Colors
+                colorStop: '#8FC0DA',    // just experiment with them
+                strokeColor: '#E0E0E0',  // to see which ones work best for you
+                generateGradient: true,
+                highDpiSupport: true, // High DPI support
+            };
+
+            var target = document.getElementById('gaugeCanvas'); // your canvas element
+            var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+            gauge.maxValue = 100; // set max gauge value
+            gauge.animationSpeed = 32; // set animation speed (32 is default value)
+            gauge.set(percentage); // set actual value
+
+            // Update gauge value display with formatted percentage
+            $('#gaugeValue').text(formattedPercentage + '%');
+        }
+    
+        function aggregateAttendanceData(data) {
+            var aggregatedData = {};
+            
+            Object.keys(data).forEach(className => {
+                Object.keys(data[className]).forEach(date => {
+                    if (!aggregatedData[date]) {
+                        aggregatedData[date] = 0;
+                    }
+                    aggregatedData[date] += data[className][date];
+                });
+            });
+            
+            return aggregatedData;
+        }
+    
+        function fetchAttendanceTrendsData(selectedClass, startDate, endDate) {
+            return fetch(`/attendance_trends_data?selected_class=${selectedClass}&start_date=${startDate}&end_date=${endDate}`)
+                .then(response => response.json());
+        }
+    
+        function fetchClasses() {
+            return fetch('/get_classes')
+                .then(response => response.json());
+        }
+    </script>
+</body>
+</html>

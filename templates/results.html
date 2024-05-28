@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+    <style>
+        /* Custom CSS for Results Page */
+        /* Custom CSS for Artistic Results Page */
+
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a modern font */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px; /* Increase the max width of the container */
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px; /* Rounded container corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff; /* Blue color for title */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px; /* Larger font size for title */
+            text-transform: uppercase; /* Convert title to uppercase */
+            letter-spacing: 2px; /* Increase letter spacing */
+            font-family: 'Montserrat', sans-serif; /* Use a decorative font for title */
+        }
+
+        .sub-title {
+            color: #555; /* Dark gray color for subtitles */
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px; /* Larger font size for subtitles */
+            font-weight: bold; /* Make subtitles bold */
+            font-family: 'Roboto', sans-serif; /* Use a modern font for subtitles */
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #007bff; /* Blue color for title */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px; /* Larger font size for title */
+            text-transform: uppercase; /* Convert title to uppercase */
+            letter-spacing: 2px; /* Increase letter spacing */
+            font-family: 'Montserrat', sans-serif; /* Use a decorative font for title */
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555; /* Darker text color */
+        }
+
+        select, input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 16px; /* Increase font size for better readability */
+            outline: none; /* Remove default focus outline */
+            color: #555; /* Darker text color */
+            transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition effects */
+        }
+
+        select:focus, input[type="date"]:focus {
+            border-color: #007bff; /* Blue border color on focus */
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Blue box shadow on focus */
+        }
+
+        button[type="submit"], #save_results_button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px; /* Increase font size */
+            outline: none; /* Remove default focus outline */
+        }
+
+        button[type="submit"]:hover, #save_results_button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 20px; /* Rounded table corners */
+            overflow: hidden; /* Hide overflow content */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff; /* Blue header */
+            color: white;
+        }
+
+        .marks-input,
+        .behaviour-input,
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            font-size: 16px; /* Increase font size */
+            outline: none; /* Remove default focus outline */
+            color: #555; /* Darker text color */
+        }
+
+        .marks-input:focus,
+        .behaviour-input:focus,
+        .notes-input:focus {
+            border-color: #007bff; /* Blue border color on focus */
+        }
+
+        #save_results_button {
+            display: block;
+            margin: 0 auto;
+            background-color: #28a745; /* Green button */
+        }
+
+        /* Styles for pop-up */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        .popup-content {
+            text-align: center;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #007bff; /* Blue color */
+            margin-bottom: 20px;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555; /* Darker text color */
+        }
+
+        .popup button {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            padding: 12px 24px; /* Increase padding */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            outline: none; /* Remove default focus outline */
+        }
+
+        .popup button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #555;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Students Results</h2>
+        <form id="results_form">
+            <div class="form-group">
+                <label for="class">Select Class:</label>
+                <select id="class" name="class" required>
+                    <option value="">Select Class</option>
+                    <!-- Option values will be filled dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="results_date">Date:</label>
+                <input type="date" id="results_date" name="results_date" required>
+            </div>
+            <div class="form-group">
+                <label for="subject_dropdown">Subject:</label>
+                <select id="subject_dropdown">
+                    <option value="">Select</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="English">English</option>
+                    <option value="Islamic">Islamic</option>
+                    <option value="Social Studies">Social Studies</option>
+                    <option value="Art">Art</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Music">Music</option>
+                    <option value="Science">Science</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Math">Math</option>
+                    <option value="Physical Education">Physical Education</option>
+                    <option value="Computer">Computer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="assessment_type">Assessment Type:</label>
+                <select id="assessment_type">
+                    <option value="">Select</option>
+                    <option value="quizzes">Quizzes</option>
+                    <option value="formative_assessment">Formative Assessment</option>
+                    <option value="diagnostic_assessment">Diagnostic Assessment</option>
+                </select>
+            </div>
+            <button type="submit">Show Students</button>
+        </form>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student Number</th>
+                    <th>Emirate ID</th>
+                    <th>Marks</th>
+                    <th>Behavior Notes</th>
+                    <th>Other Notes</th>
+                </tr>
+            </thead>
+            <tbody id="results_table_body">
+                <!-- Student results rows will be added dynamically here -->
+            </tbody>
+        </table>
+        <button id="save_results_button">Save Results</button> <!-- Button to save the results -->
+    </div>
+
+    <!-- Popup for success message -->
+    <div class="overlay" id="overlay">
+        <div class="popup" id="success_popup">
+            <div class="popup-content">
+                <span class="close">&times;</span>
+                <h2>Success</h2>
+                <p>Results submitted successfully!</p>
+                <button id="close_popup_button">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function() {
+    
+            // Add event listener for close button in pop-up
+            $('.close').click(function() {
+                hidePopup();
+            });
+    
+            // Add event listener for close button in pop-up content
+            $('#close_popup_button').click(function() {
+                hidePopup();
+            });
+    
+            function resetFormFields() {
+                $('#results_date').val(''); // Clear the date field
+                $('.marks-input').val(''); // Clear all marks input fields
+                $('.behaviour-input').val(''); // Clear all behaviour input fields
+                $('.notes-input').val(''); // Clear all notes input fields
+            }
+    
+            // Function to hide the pop-up
+            function hidePopup() {
+                $('.overlay').hide();
+                $('.popup').hide();
+            }
+    
+            // Fetch existing classes and populate the select box
+            $.ajax({
+                url: '/get_classes', // Endpoint to fetch classes
+                method: 'GET',
+                success: function(classes) {
+                    // Populate the select box with class options
+                    var classSelect = $('#class');
+                    classes.forEach(function(classData) {
+                        classSelect.append($('<option>', {
+                            value: classData.id,
+                            text: classData.ClassName // Use 'ClassName' instead of 'name'
+                        }));
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+    
+            // Function to add a row for student results dynamically
+            function addResultsRow(studentName, studentNumber, emirateID) {
+                var row = $('<tr></tr>');
+                row.append('<td>' + studentName + '</td>');
+                row.append('<td>' + studentNumber + '</td>');
+                row.append('<td>' + emirateID + '</td>');
+                row.append('<td><input type="text" class="marks-input"></td>');
+                row.append('<td><input type="text" class="behaviour-input"></td>');
+                row.append('<td><input type="text" class="notes-input"></td>');
+    
+                // Append the row to the table body
+                $('#results_table_body').append(row);    
+            }
+    
+            // Handle change event of assessment type dropdown
+            $('#assessment_type').change(function() {
+                var selectedType = $(this).val();
+                // Do something with the selected assessment type
+                console.log('Selected assessment type:', selectedType);
+            });
+    
+            // Update the results form submission 
+            $('#results_form').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+    
+                var classId = $('#class').val();
+                var attendanceDate = $('#results_date').val(); // Get the selected date
+    
+                // Fetch students for the selected class
+                $.ajax({
+                    url: '/get_students',
+                    method: 'POST',
+                    data: {
+                        class_id: classId
+                    },
+                    success: function(response) {
+                        $('#results_table_body').empty(); // Clear previous results table
+    
+                        // Get the selected subject from the dropdown
+                        var selectedSubject = $('#subject_dropdown').val();
+                        var assessmentType = $('#assessment_type').val(); // Fetch assessment type from dropdown
+    
+                        // Sort students by full_name alphabetically
+                        response.sort(function(a, b) {
+                            return a.full_name.localeCompare(b.full_name);
+                        });
+    
+                        // Populate the results table
+                        response.forEach(function(student) {
+                            addResultsRow(student.full_name, student.student_number, student.emirates_id);
+                        });
+    
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            });
+    
+            // Add event listener for Save Results button
+            $('#save_results_button').click(function() {
+                // Prepare the data to be sent to the server
+                var resultDate = $('#results_date').val();
+                var className = $('#class').find(':selected').text();
+                var subject = $('#subject_dropdown').val(); // Fetch subject from dropdown
+                var assessmentType = $('#assessment_type').val(); // Fetch assessment type from dropdown
+                var studentResults = [];
+    
+                // Iterate through each row in the table to collect student results
+                $('#results_table_body tr').each(function() {
+                    var studentName = $(this).find('td:eq(0)').text();
+                    var studentNumber = $(this).find('td:eq(1)').text();
+                    var emiratesId = $(this).find('td:eq(2)').text();
+                    var marks = $(this).find('.marks-input').val();
+                    var behaviorNotes = $(this).find('.behaviour-input').val();
+                    var otherNotes = $(this).find('.notes-input').val();
+    
+                    // Create an object for each student result
+                    var studentResult = {
+                        studentName: studentName,
+                        studentNumber: studentNumber,
+                        emiratesId: emiratesId,
+                        marks: marks,
+                        behaviorNotes: behaviorNotes,
+                        otherNotes: otherNotes
+                    };
+    
+                    // Add the student result object to the array
+                    studentResults.push(studentResult);
+                });
+    
+                // Prepare the data object to be sent in the AJAX request
+                var requestData = {
+                    resultsDate: resultDate, // Changed property name to match with backend
+                    className: className,
+                    subject: subject, // Include subject as a separate property
+                    assessmentType: assessmentType, // Include assessment type as a separate property
+                    studentResults: studentResults
+                };
+    
+                // Send the AJAX request to the Flask route
+                $.ajax({
+                    url: '/save_results',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData), // Convert the data to JSON string
+                    success: function(response) {
+                        // Show pop-up message
+                        $('.overlay').show();
+                        $('.popup').show();
+    
+                        // Clear form fields
+                        $('#results_form')[0].reset();
+    
+                        // Hide the pop-up after 3 seconds
+                        setTimeout(function() {
+                            hidePopup();
+                            resetFormFields(); // Call resetFormFields to clear form fields
+                        }, 3000);
+    
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error if needed
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    
+    </script>
+    </body>
+    </html>

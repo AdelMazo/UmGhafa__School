@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Morning Duty Schedule</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 0px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Headings Styling */
+        h2,
+        h3 {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #3e7cb1; /* Blue with a hint of purple */
+        }
+
+        h3 {
+            color: #4e8b6f; /* Greenish blue */
+        }
+
+        /* Paragraph Styling */
+        p {
+            text-align: center;
+            color: #4e8b6f;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f3f8fb; /* Light blue-gray */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #dcdcdc;
+            padding: 14px;
+            text-align: center;
+        }
+
+        /* Header Styling */
+        th {
+            background-color: #4e8b6f; /* Greenish blue */
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Day and Date Styling */
+        td:first-child {
+            color: #3e7cb1; /* Blue with a hint of purple */
+            font-weight: bold;
+        }
+
+        /* Teacher Name Styling */
+        td:not(:first-child) {
+            color: #5c82a9; /* Dark blue */
+        }
+
+        /* Styling rows */
+        tr:nth-child(even) {
+            background-color: #e0f7fa; /* Light blue background */
+        }
+
+        tr:hover {
+            background-color: #c1e8eb; /* Light teal */
+        }
+
+        /* Adding hover effects */
+        th:hover,
+        td:hover {
+            background-color: #b3d8e0; /* Pale teal */
+        }
+
+        /* Responsive Table */
+        @media screen and (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+            }
+        }
+
+        /* Download Button Styling */
+        .download-button {
+            background-color: #4e8b6f; /* Greenish blue background color */
+            color: white; /* White text color */
+            padding: 12px 24px; /* Padding around the button */
+            border: none; /* No border */
+            border-radius: 8px; /* Rounded corners */
+            font-weight: bold; /* Bold text */
+            cursor: pointer; /* Pointer cursor when hovering */
+            transition: background-color 0.3s; /* Smooth color transition */
+            margin-top: 20px; /* Margin at the top for spacing */
+        }
+
+        .download-button:hover {
+            background-color: #3a6e5c; /* Darker greenish blue on hover */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-content">
+        <h2>Morning Duty Schedule</h2>
+        <p>Time: 6:45 AM - 7:15 AM</p>
+
+        <!-- Schedule for Current Month -->
+        <h3>Schedule for {{ current_month_dates[0].strftime("%B") }}</h3>
+        <table>
+            <tr>
+                <th>Day and Date</th>
+                {% for gate in duty_schedule_current.keys() %}
+                <th>{{ gate }}</th>
+                {% endfor %}
+            </tr>
+            {% for date in current_month_dates %}
+            <tr>
+                <td>{{ date.strftime("%A, %B %d") }}</td>
+                {% for gate in duty_schedule_current.keys() %}
+                <td contenteditable="true">{{ duty_schedule_current[gate].get(date.strftime("%A, %B %d"), 'N/A') }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Schedule for Next Month -->
+        <h3>Schedule for {{ next_month_dates[0].strftime("%B") }}</h3>
+        <table>
+            <tr>
+                <th>Day and Date</th>
+                {% for gate in duty_schedule_next.keys() %}
+                <th>{{ gate }}</th>
+                {% endfor %}
+            </tr>
+            {% for date in next_month_dates %}
+            <tr>
+                <td>{{ date.strftime("%A, %B %d") }}</td>
+                {% for gate in duty_schedule_next.keys() %}
+                <td contenteditable="true">{{ duty_schedule_next[gate].get(date.strftime("%A, %B %d"), 'N/A') }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- Download Button -->
+        <button class="download-button" onclick="downloadDutySchedule()">
+            Download Schedule
+        </button>
+    </div>
+
+    <!-- JavaScript Function to Download the Duty Schedule -->
+    <script>
+        function downloadDutySchedule() {
+            // Select the content from the main content div
+            var dutyScheduleContent = document.querySelector('.main-content').innerHTML;
+
+            // Define the styles for the Word document, including page size and other styles
+            var cssStyles = `
+                <style>
+                    @page { size: A3 landscape; }
+                    body { font-family: 'Helvetica Neue', sans-serif; margin: 0; padding: 0; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #dcdcdc; padding: 10px; text-align: center; }
+                    th { background-color: #4e8b6f; color: white; }
+                    tr:nth-child(even) { background-color: #e0f7fa; }
+                </style>
+            `;
+
+            // Combine HTML and styles
+            var htmlContent = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Morning Duty Schedule</title>
+                    ${cssStyles}
+                </head>
+                <body>
+                    ${dutyScheduleContent}
+                </body>
+                </html>
+            `;
+
+            // Create a Blob from the HTML content
+            var blob = new Blob([htmlContent], { type: 'application/msword' });
+
+            // Create a URL for the Blob
+            var url = URL.createObjectURL(blob);
+
+            // Create an anchor element for downloading the file
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'Morning_Duty_Schedule.doc';
+
+            // Append the link to the document body and trigger the download
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up the link and revoke the Blob URL
+            setTimeout(function() {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+
+        // Add event listener to track changes in the table
+        document.querySelectorAll('td[contenteditable="true"]').forEach(function(cell) {
+            cell.addEventListener('blur', function() {
+                // Code to save the new teacher name (content of the cell) to your data structure or database
+                var newTeacherName = cell.textContent;
+                
+                // You can save the changes here, e.g., to a data structure
+                console.log('Updated teacher name:', newTeacherName);
+                
+                // You can also make an API call to save the changes to the server, if needed
+            });
+        });
+    </script>
+</body>
+
+</html>

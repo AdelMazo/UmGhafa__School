@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absentee Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.5.0/html-docx.js"></script>
+
+    <style>
+        /* Add your custom CSS styles here */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f7f7f7;
+            margin: 0;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #ff4081;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-container input[type="date"],
+        .form-container button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .form-container button {
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-container button:hover {
+            background-color: #d81b60;
+        }
+
+        .download-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .download-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Absentee Report</h1>
+
+        <!-- Date Selection Form -->
+        <div class="form-container">
+            <label for="start_date">From:</label>
+            <input type="date" id="start_date" name="start_date" required>
+
+            <label for="end_date">To:</label>
+            <input type="date" id="end_date" name="end_date" required>
+            
+            <button type="button" id="generate_report_button">Generate Report</button>
+        </div>
+
+        <!-- Absentee Report Table -->
+        <div id="absentee_report_table_container">
+            <table id="absentee_report_table">
+                <thead>
+                    <tr>
+                        <th>Class Name</th>
+                        <th>Student Name</th>
+                        <th>Student Number</th>
+                        <th>Total Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Absentee report data will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Error Message Section -->
+        <div id="error_message" style="display: none;"></div>
+
+        <!-- Loading Indicator -->
+        <div id="loading_indicator" style="display: none;">Loading...</div>
+
+        <!-- Download Report Button -->
+        <button id="download_report_button" class="download-button" style="display: none;"><i class="fas fa-download"></i> Download Report</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#generate_report_button').click(function() {
+                generateAbsenteeReport(); // Call function to generate absentee report
+            });
+
+            // Download Report Button Click Handler
+            $('#download_report_button').click(function() {
+                downloadReportAsWord();
+            });
+        });
+
+        // Function to generate absentee report
+        function generateAbsenteeReport() {
+            var startDate = $('#start_date').val();
+            var endDate = $('#end_date').val();
+
+            // Show loading indicator
+            $('#loading_indicator').show();
+
+            // Make AJAX request to fetch absentee report data
+            $.ajax({
+                url: '/generate_absentee_report',
+                type: 'POST',
+                data: {
+                    start_date: startDate,
+                    end_date: endDate
+                },
+                success: function(response) {
+                    // Hide loading indicator
+                    $('#loading_indicator').hide();
+
+                    // Clear previous data
+                    $('#absentee_report_table tbody').empty();
+
+                    // Populate absentee report table with fetched data
+                    response.absentee_report.forEach(function(record) {
+                        var row = '<tr>' +
+                            '<td>' + record.class_name + '</td>' +
+                            '<td>' + record.student_name + '</td>' +
+                            '<td>' + record.student_number + '</td>' +
+                            '<td>' + record.total_absent + '</td>' +
+                            '</tr>';
+                        $('#absentee_report_table tbody').append(row);
+                    });
+
+                    // Show Download Report button
+                    $('#download_report_button').show();
+                },
+                error: function(xhr, status, error) {
+                    // Hide loading indicator
+                    $('#loading_indicator').hide();
+
+                    // Display error message
+                    $('#error_message').text('Error generating absentee report: ' + error).show();
+                }
+            });
+        }
+
+        function downloadReportAsWord() {
+            // Get the selected date and class
+            var startDate = $('#start_date').val();
+            var endDate = $('#end_date').val();
+
+            // Generate the report content
+            var reportContent = document.getElementById('absentee_report_table_container').innerHTML;
+
+            // CSS styles to control the page dimensions and table appearance
+            var cssStyles = `
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background-color: #f7f7f7;
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+
+                    th, td {
+                        padding: 12px;
+                        border-bottom: 1px solid #ddd;
+                        text-align: left;
+                    }
+
+                    th {
+                        background-color: #f2f2f2;
+                        color: #333;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                    }
+
+                    tbody tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            `;
+
+            // Specify UTF-8 encoding and set document language to English
+            var htmlContent = `<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Absentee Report - ${startDate} to ${endDate}</title>
+                    ${cssStyles}
+                </head>
+                <body>
+                    <h1>Absentee Report</h1>
+                    <h2>From: ${startDate} To: ${endDate}</h2>
+                    ${reportContent}
+                </body>
+                </html>
+            `;
+
+            // Convert HTML content to Word document
+            var blob = new Blob([htmlContent], { type: 'application/msword' });
+            var url = URL.createObjectURL(blob);
+
+            // Create a link element to trigger the download
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'absentee_report_' + startDate + '_to_' + endDate + '.doc';
+
+            // Append the link to the document body and trigger the download
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+ 
+    </script>
+</body>
+</html>

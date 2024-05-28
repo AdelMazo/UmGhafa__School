@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Teacher</title>
+    <style>
+        /* Styles for the form */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        form {
+            width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Add Teacher</h1>
+    <form id="addTeacherForm">
+        <label for="employee_name">Name:</label>
+        <input type="text" id="employee_name" name="employee_name" required>
+
+        <label for="date_of_birth">Date of Birth:</label>
+        <input type="date" id="date_of_birth" name="date_of_birth" required>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="" disabled selected>Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label for="job_id">Job ID:</label>
+        <input type="text" id="job_id" name="job_id" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="mission">Mission:</label>
+        <input type="text" id="mission" name="mission">
+
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject">
+
+        <label for="phone_number">Phone Number:</label>
+        <input type="tel" id="phone_number" name="phone_number" required>
+
+        <label for="coordinator">Is Coordinator?</label>
+        <input type="checkbox" id="coordinator" name="coordinator">
+
+        <label for="teacher_classes">Classes:</label>
+        <input type="text" id="teacher_classes" name="teacher_classes">
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="submit" value="Add Teacher">
+    </form>
+
+    <script>
+        // Add form event listener for form submission
+        document.getElementById('addTeacherForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // Use AJAX to submit the form data
+            fetch('/add_teachers', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display a pop-up notification
+                    alert("Teacher added successfully!");
+                } else {
+                    // Display an error message
+                    alert("An error occurred: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("An error occurred:", error);
+                alert("An error occurred while submitting the form.");
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Students</title>
+    <!-- Custom CSS -->
+    <style>
+        /* General Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .sub-title {
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        select,
+        input[type="text"],
+        input[type="email"],
+        input[type="date"] {
+            width: calc(100% - 20px); /* Adjusted width */
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px; /* Added margin bottom */
+        }
+
+        select:focus,
+        input[type="date"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        /* Button Styles */
+        button[type="submit"],
+        #save_results_button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            outline: none;
+            display: block; /* Added display block */
+            margin: 0 auto; /* Center align */
+        }
+
+        button[type="submit"]:hover,
+        #save_results_button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Success Message Styles */
+        .success-message {
+            text-align: center;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Pop-up Message Styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            opacity: 0;
+            animation: slideIn 0.5s forwards;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .popup p {
+            margin-bottom: 30px;
+            color: #555;
+            text-align: center;
+        }
+
+        .popup button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            transition: background-color 0.3s ease;
+        }
+
+        .popup button:hover {
+            background-color: #45a049;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -70%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body>
+</head>
+<body>
+    <div class="container">
+        <h2>Add Student</h2>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <!-- Student form -->
+        <form id="add_student_form" method="POST" action="{{ url_for('add_student') }}">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="student_number">Student Number</label>
+                <input type="text" id="student_number" name="student_number" required>
+            </div>
+            <div class="form-group">
+                <label for="emirates_id">Emirates ID</label>
+                <input type="text" id="emirates_id" name="emirates_id" required>
+            </div>
+            <div class="form-group">
+                <label>Gender</label><br>
+                <input type="radio" id="male" name="gender" value="Male" required>
+                <label for="male">Male</label>
+                <input type="radio" id="female" name="gender" value="Female" required>
+                <label for="female">Female</label>
+            </div>
+            <div class="form-group">
+                <label for="class">Class</label>
+                <select id="class" name="class" required>
+                    <option value="">Select Class</option>
+                    {% for class_info in classes_data %}
+                    <option value="{{ class_info[0] }}">{{ class_info[1] }} - Section {{ class_info[2] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#add_student_form').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+    
+                // Serialize form data
+                var formData = $(this).serialize();
+    
+                // Submit form data using AJAX
+                $.ajax({
+                    url: '/add_student',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Show pop-up message
+                        $('.overlay').show();
+                        $('.popup').show();
+    
+                        // Clear form fields
+                        $('#add_student_form')[0].reset();
+    
+                        // Hide pop-up after 3 seconds
+                        setTimeout(function() {
+                            hidePopup();
+                        }, 3000);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error if needed
+                        console.error(error);
+                    }
+                });
+            });
+        });
+    
+        // Function to hide the pop-up message
+        function hidePopup() {
+            $('.overlay').hide();
+            $('.popup').hide();
+        }
+    
+    </script>
+    
+    <!-- Pop-up Message -->
+    <div class="overlay"></div>
+    <div class="popup">
+        <h2>Success!</h2>
+        <p>Your student has been added successfully.</p>
+        <button onclick="hidePopup()">OK</button>
+    </div>
+    
+    </body>
+    </html>
+    

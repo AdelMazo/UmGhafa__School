@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Attendance Report</title>
+    <!-- Include any necessary CSS files or stylesheets -->
+    <style>
+        /* Add your custom CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        /* Styling for date selection box */
+        .date-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .date-container input[type="date"] {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        select {
+            margin-right: 10px;
+            padding: 6px; /* Adjust padding for select boxes */
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th:first-child, td:first-child {
+            width: 40%; /* Student Name column */
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 20%; /* Student Number column */
+        }
+
+        th:nth-child(n+3), td:nth-child(n+3) {
+            width: 10%; /* Other columns */
+        }
+
+        /* Header styles */
+        h1 {
+            color: #0c0004; /* Pink color */
+            text-align: center;
+        }
+        /* Header styles */
+        h2 {
+            color: #ff4081; /* Pink color */
+            text-align: center;
+            margin-top: 0;
+        }
+
+        /* Styling for table headers */
+        th {
+            background-color: #f7f7f7; /* Lighter background for headers */
+            font-weight: bold;
+            color: #ff4081; /* Pink color */
+        }
+
+        /* Styling for even rows */
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2; /* Light gray background */
+        }
+
+        /* Styling for hover effect */
+        tbody tr:hover {
+            background-color: #ddd; /* Dark gray background on hover */
+        }
+
+        /* Adjust form elements to display horizontally */
+        #attendance_form {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        #attendance_form > * {
+            flex: 1 1 50%; /* Each form element takes half of the container's width */
+            margin-right: 10px;
+        }
+
+        /* Adjust margin for buttons */
+        button {
+            margin-top: 10px;
+            margin-right: 0; /* Remove right margin to align buttons properly */
+        }
+
+        /* Styling for the report container */
+        #report_container {
+            margin-top: 20px;
+        }
+
+        /* Styling for the pie chart */
+        #pie_chart_container {
+            max-width: 400px; /* Set maximum width */
+            margin: 20px auto; /* Center the pie chart */
+            display: block;
+        }
+
+        /* Styling for the pie chart labels */
+        .chartjs-datalabels {
+            font-weight: bold;
+            font-size: 12px; /* Adjust font size as needed */
+            color: #fff; /* Text color */
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.5); /* Add a shadow effect */
+        }
+    </style>
+</head>
+<body>
+    <h1>Daily Attendance Report</h1>
+
+    <!-- Date Selection Form -->
+    <form id="attendance_form">
+        <div class="date-container">
+            <label for="attendance_date">Select Date:</label>
+            <input type="date" id="attendance_date" name="selected_date">
+        </div>
+        
+        <label for="class">Select Class:</label>
+        <select id="class" name="selected_class" required>
+            <option value="">Select Class</option>
+            <!-- Options will be populated dynamically -->
+        </select>
+        
+        <button type="button" onclick="generateReport()">Generate Report</button>
+        <button type="button" onclick="downloadReport()">Download Report</button>
+    </form>
+
+    <!-- Report Container -->
+    <div id="report_container" style="display: none;"> <!-- Initially hidden -->
+        <!-- Report title and selected date -->
+        <h2 id="report_title"></h2>
+
+        <!-- Container for pie chart -->
+        <div id="pie_chart_container">
+            <!-- Canvas for pie chart -->
+            <canvas id="pie_chart" width="400" height="400"></canvas>
+            
+        </div>
+
+        <!-- Report will be generated here -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student Number</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Late</th>
+                    <th>Sleep</th>
+                    <th>Permission</th>
+                </tr>
+            </thead>
+            <tbody id="report_table_body">
+                <!-- Report data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Include any necessary JavaScript files or scripts -->
+    <script>
+        // Function to fetch classes and populate the select box
+        $(document).ready(function() {
+            $.ajax({
+                url: '/get_classes', // Endpoint to fetch classes
+                method: 'GET',
+                success: function(classes) {
+                    // Populate the select box with class options
+                    var classSelect = $('#class');
+                    classes.forEach(function(classData) {
+                        classSelect.append($('<option>', {
+                            value: classData.name,
+                            text: classData.ClassName // Use 'ClassName' instead of 'name'
+                        }));
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    
+        function generateReport() {
+            // Get the selected date and class
+            var selectedDate = $('#attendance_date').val();
+            var selectedClass = $('#class').val();
+
+            console.log("Selected Date:", selectedDate);  // Ensure correct date is logged
+            console.log("Selected Class:", selectedClass);  // Ensure correct class is logged
+
+            // AJAX request to send the selected date and class to the Flask route
+            $.ajax({
+                url: '/get_attendance_report',
+                method: 'POST',
+                data: {
+                    selected_date: selectedDate,
+                    selected_class: selectedClass
+                },
+                success: function(response) {
+                    console.log(response); // Log the entire response object for debugging
+                    if (response.message) {
+                        // Display message if no data available
+                        $('#report_container').html("<p>" + response.message + "</p>");
+                    } else {
+                        // Parse the response data and generate the report
+                        var reportHTML = "";
+                        if (response.report_data.length === 0) {
+                            // Display message if no data available for the selected date and class
+                            reportHTML = "<p>No data available for the selected date and class.</p>";
+                        } else {
+                            // Populate the report table with data
+                            response.report_data.forEach(function(student) {
+                                reportHTML += "<tr><td>" + student.student_name + "</td><td>" + student.student_number + "</td><td>" + student.present + "</td><td>" + student.absent + "</td><td>" + student.late + "</td><td>" + student.sleep + "</td><td>" + student.permission + "</td></tr>";
+                            });
+                        }
+                        // Update the report table body with the generated report HTML
+                        $('#report_table_body').html(reportHTML);
+                        // Show the report container
+                        $('#report_container').show();
+                        // Update the report title based on the selected class and date
+                        $('#report_title').html(selectedClass + " Attendance Report" + "<br>(" + selectedDate + ")");
+
+                        // Log the attendance status for debugging
+                        console.log("Attendance Status:", response.attendance_status);
+
+                        // Generate pie chart
+                        generatePieChart(response.attendance_status);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to fetch attendance data. Error: " + xhr.status);
+                }
+            });
+        }
+
+        function downloadReport() {
+            // Function to download the report as a Word file
+            var selectedDate = $('#attendance_date').val();
+            var selectedClass = $('#class').val();
+            var reportContent = document.getElementById('report_container').outerHTML;
+            var pieChart = document.getElementById('pie_chart').toDataURL(); // Get the pie chart as data URL
+            
+            // CSS styles to control the page dimensions
+            var cssStyles = '<style>' + 
+                '@page { size: A4 landscape; }' + // Set page size to A4 landscape
+                'html, body { width: 100%; height: 100%; margin: 0; padding: 0; }' + // Full width and height
+                document.getElementsByTagName('style')[0].innerHTML +
+                '</style>'; // Get existing CSS styles
+
+            // Specify UTF-8 encoding and set document language to Arabic
+            var htmlContent = '<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8"><title>' + selectedClass + ' Attendance Report</title>' + cssStyles + '</head><body>' + reportContent + '<img src="' + pieChart + '" alt="Pie Chart" style="display: block; margin: 20px auto;">' + '</body></html>';
+            
+            var blob = new Blob([htmlContent], { type: 'application/msword' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = selectedClass + '_Attendance_Report_' + selectedDate + '.doc';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(function() {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+
+        function generatePieChart(response) {
+            var reportData = response.report_data;
+
+            // Check if there's at least one student with attendance data
+            var hasData = reportData.some(function(student) {
+                return student.present > 0 || student.absent > 0 || student.late > 0 || student.sleep > 0 || student.permission > 0;
+            });
+
+            if (!hasData) {
+                // If no student has attendance data, display a message instead of rendering the pie chart
+                $('#pie_chart_container').html('<p>No data available for the selected date and class.</p>');
+                return;
+            }
+
+            // Initialize counters for each attendance status
+            var presentCount = 0;
+            var absentCount = 0;
+            var lateCount = 0;
+            var sleepCount = 0;
+            var permissionCount = 0;
+
+            // Loop through the report data to count each attendance status
+            reportData.forEach(function(student) {
+                presentCount += student.present;
+                absentCount += student.absent;
+                lateCount += student.late;
+                sleepCount += student.sleep;
+                permissionCount += student.permission;
+            });
+
+            // Calculate the total number of attendance statuses
+            var totalAttendanceStatuses = presentCount + absentCount + lateCount + sleepCount + permissionCount;
+
+            // Calculate the percentage of each attendance status
+            var presentPercentage = (presentCount / totalAttendanceStatuses) * 100;
+            var absentPercentage = (absentCount / totalAttendanceStatuses) * 100;
+            var latePercentage = (lateCount / totalAttendanceStatuses) * 100;
+            var sleepPercentage = (sleepCount / totalAttendanceStatuses) * 100;
+            var permissionPercentage = (permissionCount / totalAttendanceStatuses) * 100;
+
+            // Destroy previous chart instance if exists
+            var existingChart = Chart.getChart('pie_chart');
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            // Generate the pie chart
+            var ctx = document.getElementById('pie_chart').getContext('2d');
+            var pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Present', 'Absent', 'Late', 'Sleep', 'Permission'],
+                    datasets: [{
+                        data: [presentPercentage, absentPercentage, latePercentage, sleepPercentage, permissionPercentage],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                // Inside the options object for the pie chart
+                options: {
+                    plugins: {
+                        datalabels: {
+                            formatter: function(value, context) {
+                                var formattedValue = Math.round(value) + '%';
+                                console.log("Formatted value:", formattedValue); // Add this line to print the formatted value to the console
+                                return formattedValue;
+                            },
+                            color: '#fff',
+                            align: 'end',
+                            offset: 5, // Adjust the offset to ensure labels are not overlapping
+                            anchor: 'end',
+                            display: 'auto' // Display labels for all data points
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var dataset = data.datasets[tooltipItem.datasetIndex];
+                                var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+                                    return previousValue + currentValue;
+                                });
+                                var currentValue = dataset.data[tooltipItem.index];
+                                var percentage = Math.floor(((currentValue / total) * 100) + 0.5); // Round to nearest whole number
+                                return percentage + "%";
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
